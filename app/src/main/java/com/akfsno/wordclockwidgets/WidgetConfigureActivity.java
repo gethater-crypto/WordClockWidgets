@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.appwidget.AppWidgetManager;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -14,19 +15,16 @@ import android.widget.Spinner;
 public class WidgetConfigureActivity extends Activity {
 
     private int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-    private Spinner colorSpinner;
-    private SeekBar fontSizeSeekBar;
+    private Spinner styleSpinner, colorSpinner, fontSpinner, borderColorSpinner, backgroundColorSpinner;
+    private SeekBar fontSizeSeekBar, lineSpacingSeekBar, borderWidthSeekBar, backgroundAlphaSeekBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configure);
 
-        // Set the result to CANCELED. This will cause the widget host to cancel
-        // out of the widget placement if the user presses the back button.
         setResult(RESULT_CANCELED);
 
-        // Find the widget id from the intent.
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         if (extras != null) {
@@ -34,20 +32,46 @@ public class WidgetConfigureActivity extends Activity {
                     AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         }
 
-        // If this activity was started with an intent without an app widget ID, finish with an error.
         if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
             finish();
             return;
         }
 
+        styleSpinner = findViewById(R.id.style_spinner);
+        ArrayAdapter<String> styleAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,
+                new String[]{"Базовый", "Горизонтальный", "Расширенный", "Кислотный", "Неоновый"});
+        styleAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        styleSpinner.setAdapter(styleAdapter);
+
         colorSpinner = findViewById(R.id.color_spinner);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,
-                new String[]{"Чёрный", "Белый", "Красный", "Зелёный", "Синий", "Жёлтый"});
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        colorSpinner.setAdapter(adapter);
+        ArrayAdapter<String> colorAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,
+                new String[]{"Чёрный", "Белый", "Красный", "Зелёный", "Синий", "Жёлтый", "Оранжевый", "Фиолетовый", "Розовый", "Серый"});
+        colorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        colorSpinner.setAdapter(colorAdapter);
+
+        fontSpinner = findViewById(R.id.font_spinner);
+        ArrayAdapter<String> fontAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,
+                new String[]{"Обычный", "Жирный", "Курсив", "Моноширинный", "Санс-сериф"});
+        fontAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        fontSpinner.setAdapter(fontAdapter);
+
+        borderColorSpinner = findViewById(R.id.border_color_spinner);
+        borderColorSpinner.setAdapter(colorAdapter);
+
+        backgroundColorSpinner = findViewById(R.id.background_color_spinner);
+        backgroundColorSpinner.setAdapter(colorAdapter);
 
         fontSizeSeekBar = findViewById(R.id.font_size_seekbar);
         fontSizeSeekBar.setProgress((int) WidgetPreferences.getFontSize(this, appWidgetId, 24f));
+
+        lineSpacingSeekBar = findViewById(R.id.line_spacing_seekbar);
+        lineSpacingSeekBar.setProgress((int) (WidgetPreferences.getLineSpacing(this, appWidgetId, 1.0f) * 100));
+
+        borderWidthSeekBar = findViewById(R.id.border_width_seekbar);
+        borderWidthSeekBar.setProgress(WidgetPreferences.getBorderWidth(this, appWidgetId, 2));
+
+        backgroundAlphaSeekBar = findViewById(R.id.background_alpha_seekbar);
+        backgroundAlphaSeekBar.setProgress(WidgetPreferences.getBackgroundAlpha(this, appWidgetId, 0));
 
         Button saveButton = findViewById(R.id.save_button);
         saveButton.setOnClickListener(new View.OnClickListener() {
@@ -59,22 +83,52 @@ public class WidgetConfigureActivity extends Activity {
     }
 
     private void saveConfiguration() {
-        int color = Color.BLACK;
-        switch (colorSpinner.getSelectedItemPosition()) {
-            case 0: color = Color.BLACK; break;
-            case 1: color = Color.WHITE; break;
-            case 2: color = Color.RED; break;
-            case 3: color = Color.GREEN; break;
-            case 4: color = Color.BLUE; break;
-            case 5: color = Color.YELLOW; break;
-        }
-        WidgetPreferences.saveColor(this, appWidgetId, color);
-        WidgetPreferences.saveFontSize(this, appWidgetId, fontSizeSeekBar.getProgress());
+        String style = (String) styleSpinner.getSelectedItem();
+        WidgetPreferences.saveStyle(this, appWidgetId, style);
 
-        // Make sure we pass back the original appWidgetId
+        int color = getColorFromSpinner(colorSpinner);
+        WidgetPreferences.saveColor(this, appWidgetId, color);
+
+        float fontSize = fontSizeSeekBar.getProgress();
+        WidgetPreferences.saveFontSize(this, appWidgetId, fontSize);
+
+        String fontType = (String) fontSpinner.getSelectedItem();
+        WidgetPreferences.saveFontType(this, appWidgetId, fontType);
+
+        float lineSpacing = lineSpacingSeekBar.getProgress() / 100.0f;
+        WidgetPreferences.saveLineSpacing(this, appWidgetId, lineSpacing);
+
+        int borderColor = getColorFromSpinner(borderColorSpinner);
+        WidgetPreferences.saveBorderColor(this, appWidgetId, borderColor);
+
+        int borderWidth = borderWidthSeekBar.getProgress();
+        WidgetPreferences.saveBorderWidth(this, appWidgetId, borderWidth);
+
+        int backgroundColor = getColorFromSpinner(backgroundColorSpinner);
+        WidgetPreferences.saveBackgroundColor(this, appWidgetId, backgroundColor);
+
+        int backgroundAlpha = backgroundAlphaSeekBar.getProgress();
+        WidgetPreferences.saveBackgroundAlpha(this, appWidgetId, backgroundAlpha);
+
         Intent resultValue = new Intent();
         resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         setResult(RESULT_OK, resultValue);
         finish();
+    }
+
+    private int getColorFromSpinner(Spinner spinner) {
+        switch (spinner.getSelectedItemPosition()) {
+            case 0: return Color.BLACK;
+            case 1: return Color.WHITE;
+            case 2: return Color.RED;
+            case 3: return Color.GREEN;
+            case 4: return Color.BLUE;
+            case 5: return Color.YELLOW;
+            case 6: return Color.rgb(255, 165, 0); // Orange
+            case 7: return Color.rgb(128, 0, 128); // Purple
+            case 8: return Color.rgb(255, 192, 203); // Pink
+            case 9: return Color.GRAY;
+            default: return Color.BLACK;
+        }
     }
 }

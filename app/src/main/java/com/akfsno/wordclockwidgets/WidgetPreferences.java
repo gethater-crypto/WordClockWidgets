@@ -27,5 +27,73 @@ public class WidgetPreferences {
         return prefs.getFloat("fontSize_" + appWidgetId, defaultSize);
     }
 
-    // Add more for other settings
+    public static void saveBorderColor(Context context, int appWidgetId, int color) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putInt("borderColor_" + appWidgetId, color).apply();
+    }
+
+    public static int getBorderColor(Context context, int appWidgetId, int defaultColor) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getInt("borderColor_" + appWidgetId, defaultColor);
+    }
+
+    public static void saveBorderWidth(Context context, int appWidgetId, int width) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putInt("borderWidth_" + appWidgetId, width).apply();
+    }
+
+    public static int getBorderWidth(Context context, int appWidgetId, int defaultWidth) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getInt("borderWidth_" + appWidgetId, defaultWidth);
+    }
+
+    public static void saveBackgroundColor(Context context, int appWidgetId, int color) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putInt("backgroundColor_" + appWidgetId, color).apply();
+    }
+
+    public static int getBackgroundColor(Context context, int appWidgetId, int defaultColor) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getInt("backgroundColor_" + appWidgetId, defaultColor);
+    }
+
+    public static void saveBackgroundAlpha(Context context, int appWidgetId, int alpha) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putInt("backgroundAlpha_" + appWidgetId, alpha).apply();
+    }
+
+    public static int getBackgroundAlpha(Context context, int appWidgetId, int defaultAlpha) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getInt("backgroundAlpha_" + appWidgetId, defaultAlpha);
+    }
+
+    public static void saveFontType(Context context, int appWidgetId, String fontType) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString("fontType_" + appWidgetId, fontType).apply();
+    }
+
+    public static String getFontType(Context context, int appWidgetId, String defaultType) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getString("fontType_" + appWidgetId, defaultType);
+    }
+
+    public static void saveLineSpacing(Context context, int appWidgetId, float spacing) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putFloat("lineSpacing_" + appWidgetId, spacing).apply();
+    }
+
+    public static float getLineSpacing(Context context, int appWidgetId, float defaultSpacing) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getFloat("lineSpacing_" + appWidgetId, defaultSpacing);
+    }
+
+    public static void saveStyle(Context context, int appWidgetId, String style) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString("style_" + appWidgetId, style).apply();
+    }
+
+    public static String getStyle(Context context, int appWidgetId, String defaultStyle) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getString("style_" + appWidgetId, defaultStyle);
+    }
 }
