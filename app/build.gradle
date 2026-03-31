@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace 'com.akfsno.wordclockwidgets'
-    compileSdk 30
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.akfsno.wordclockwidgets"
         minSdk 21
-        targetSdk 30
+        targetSdk 34
         versionCode 1
         versionName "1.0"
     }
