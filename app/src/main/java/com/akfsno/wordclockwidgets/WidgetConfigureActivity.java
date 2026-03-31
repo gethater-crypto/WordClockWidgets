@@ -21,8 +21,10 @@ public class WidgetConfigureActivity extends Activity {
     private int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private Spinner styleSpinner, colorSpinner, borderColorSpinner, backgroundColorSpinner;
     private SeekBar fontSizeSeekBar, borderWidthSeekBar, backgroundAlphaSeekBar;
-    private SeekBar hourOffsetXSeekBar, hourOffsetYSeekBar, minuteOffsetXSeekBar, minuteOffsetYSeekBar;
-    private CheckBox showSecondsCheckbox, showDateCheckbox, showDayOfWeekCheckbox, use12HourCheckbox;
+    private SeekBar minuteOffsetXSeekBar, minuteOffsetYSeekBar;
+    private CheckBox showSecondsCheckbox, showDateCheckbox, showDayOfWeekCheckbox, use12HourCheckbox, secondsAsWordsCheckbox;
+    private SeekBar minuteFontSizeSeekBar, secondFontSizeSeekBar;
+    private SeekBar secondOffsetXSeekBar, secondOffsetYSeekBar, dateOffsetXSeekBar, dateOffsetYSeekBar, dayOfWeekOffsetXSeekBar, dayOfWeekOffsetYSeekBar, dayNightOffsetXSeekBar, dayNightOffsetYSeekBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +51,7 @@ public class WidgetConfigureActivity extends Activity {
 
         styleSpinner = findViewById(R.id.style_spinner);
         ArrayAdapter<String> styleAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,
-                new String[]{"Базовый", "Горизонтальный", "Расширенный", "Кислотный", "Неоновый"});
+                new String[]{"Базовый", "Горизонтальный", "Расширенный", "Кислотный", "Неоновый", "Маленький"});
         styleAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         styleSpinner.setAdapter(styleAdapter);
 
@@ -88,11 +90,37 @@ public class WidgetConfigureActivity extends Activity {
         showDateCheckbox = findViewById(R.id.show_date_checkbox);
         showDayOfWeekCheckbox = findViewById(R.id.show_day_of_week_checkbox);
         use12HourCheckbox = findViewById(R.id.use_12hour_checkbox);
+        secondsAsWordsCheckbox = findViewById(R.id.seconds_as_words_checkbox);
+
+        minuteFontSizeSeekBar = findViewById(R.id.minute_font_size_seekbar);
+        secondFontSizeSeekBar = findViewById(R.id.second_font_size_seekbar);
+
+        secondOffsetXSeekBar = findViewById(R.id.second_offset_x_seekbar);
+        secondOffsetYSeekBar = findViewById(R.id.second_offset_y_seekbar);
+        dateOffsetXSeekBar = findViewById(R.id.date_offset_x_seekbar);
+        dateOffsetYSeekBar = findViewById(R.id.date_offset_y_seekbar);
+        dayOfWeekOffsetXSeekBar = findViewById(R.id.day_of_week_offset_x_seekbar);
+        dayOfWeekOffsetYSeekBar = findViewById(R.id.day_of_week_offset_y_seekbar);
+        dayNightOffsetXSeekBar = findViewById(R.id.day_night_offset_x_seekbar);
+        dayNightOffsetYSeekBar = findViewById(R.id.day_night_offset_y_seekbar);
 
         showSecondsCheckbox.setChecked(WidgetPreferences.getShowSeconds(this, appWidgetId, false));
         showDateCheckbox.setChecked(WidgetPreferences.getShowDate(this, appWidgetId, false));
         showDayOfWeekCheckbox.setChecked(WidgetPreferences.getShowDayOfWeek(this, appWidgetId, false));
         use12HourCheckbox.setChecked(WidgetPreferences.getUse12HourFormat(this, appWidgetId, false));
+        secondsAsWordsCheckbox.setChecked(WidgetPreferences.getSecondsAsWords(this, appWidgetId, true));
+
+        minuteFontSizeSeekBar.setProgress((int) WidgetPreferences.getMinuteFontSize(this, appWidgetId, 24f));
+        secondFontSizeSeekBar.setProgress((int) WidgetPreferences.getSecondFontSize(this, appWidgetId, 18f));
+
+        secondOffsetXSeekBar.setProgress(WidgetPreferences.getSecondOffsetX(this, appWidgetId, 0));
+        secondOffsetYSeekBar.setProgress(WidgetPreferences.getSecondOffsetY(this, appWidgetId, 0));
+        dateOffsetXSeekBar.setProgress(WidgetPreferences.getDateOffsetX(this, appWidgetId, 0));
+        dateOffsetYSeekBar.setProgress(WidgetPreferences.getDateOffsetY(this, appWidgetId, 0));
+        dayOfWeekOffsetXSeekBar.setProgress(WidgetPreferences.getDayOfWeekOffsetX(this, appWidgetId, 0));
+        dayOfWeekOffsetYSeekBar.setProgress(WidgetPreferences.getDayOfWeekOffsetY(this, appWidgetId, 0));
+        dayNightOffsetXSeekBar.setProgress(WidgetPreferences.getDayNightOffsetX(this, appWidgetId, 0));
+        dayNightOffsetYSeekBar.setProgress(WidgetPreferences.getDayNightOffsetY(this, appWidgetId, 0));
 
         String savedStyle = WidgetPreferences.getStyle(this, appWidgetId, "Базовый");
         int stylePosition = getStylePosition(savedStyle);
@@ -143,6 +171,19 @@ public class WidgetConfigureActivity extends Activity {
         WidgetPreferences.saveShowDate(this, appWidgetId, showDateCheckbox.isChecked());
         WidgetPreferences.saveShowDayOfWeek(this, appWidgetId, showDayOfWeekCheckbox.isChecked());
         WidgetPreferences.saveUse12HourFormat(this, appWidgetId, use12HourCheckbox.isChecked());
+        WidgetPreferences.saveSecondsAsWords(this, appWidgetId, secondsAsWordsCheckbox.isChecked());
+
+        WidgetPreferences.saveMinuteFontSize(this, appWidgetId, minuteFontSizeSeekBar.getProgress());
+        WidgetPreferences.saveSecondFontSize(this, appWidgetId, secondFontSizeSeekBar.getProgress());
+
+        WidgetPreferences.saveSecondOffsetX(this, appWidgetId, secondOffsetXSeekBar.getProgress());
+        WidgetPreferences.saveSecondOffsetY(this, appWidgetId, secondOffsetYSeekBar.getProgress());
+        WidgetPreferences.saveDateOffsetX(this, appWidgetId, dateOffsetXSeekBar.getProgress());
+        WidgetPreferences.saveDateOffsetY(this, appWidgetId, dateOffsetYSeekBar.getProgress());
+        WidgetPreferences.saveDayOfWeekOffsetX(this, appWidgetId, dayOfWeekOffsetXSeekBar.getProgress());
+        WidgetPreferences.saveDayOfWeekOffsetY(this, appWidgetId, dayOfWeekOffsetYSeekBar.getProgress());
+        WidgetPreferences.saveDayNightOffsetX(this, appWidgetId, dayNightOffsetXSeekBar.getProgress());
+        WidgetPreferences.saveDayNightOffsetY(this, appWidgetId, dayNightOffsetYSeekBar.getProgress());
 
         Intent resultValue = new Intent();
         resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
@@ -150,7 +191,8 @@ public class WidgetConfigureActivity extends Activity {
 
         // Update the widget
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-        Intent intent = new Intent(this, WordClockWidgetProvider.class); // Or determine the correct provider
+        Class<?> providerClass = getProviderClass(style);
+        Intent intent = new Intent(this, providerClass);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[]{appWidgetId});
         sendBroadcast(intent);
@@ -181,22 +223,21 @@ public class WidgetConfigureActivity extends Activity {
             case "Расширенный": return 2;
             case "Кислотный": return 3;
             case "Неоновый": return 4;
+            case "Маленький": return 5;
             default: return 0;
         }
     }
 
-    private int getPositionForColor(int color) {
-        if (color == Color.BLACK) return 0;
-        if (color == Color.WHITE) return 1;
-        if (color == Color.RED) return 2;
-        if (color == Color.GREEN) return 3;
-        if (color == Color.BLUE) return 4;
-        if (color == Color.YELLOW) return 5;
-        if (color == Color.rgb(255, 165, 0)) return 6;
-        if (color == Color.rgb(128, 0, 128)) return 7;
-        if (color == Color.rgb(255, 192, 203)) return 8;
-        if (color == Color.GRAY) return 9;
-        return 0;
+    private Class<?> getProviderClass(String style) {
+        switch (style) {
+            case "Базовый": return WordClockWidgetProvider.class;
+            case "Горизонтальный": return HorizontalWordClockWidgetProvider.class;
+            case "Расширенный": return ExtendedWordClockWidgetProvider.class;
+            case "Кислотный": return AcidWordClockWidgetProvider.class;
+            case "Неоновый": return NeonWordClockWidgetProvider.class;
+            case "Маленький": return SmallWordClockWidgetProvider.class;
+            default: return WordClockWidgetProvider.class;
+        }
     }
 
     private int findExistingWidgetId() {
@@ -216,6 +257,9 @@ public class WidgetConfigureActivity extends Activity {
         if (widgetIds.length > 0) return widgetIds[0];
 
         widgetIds = manager.getAppWidgetIds(new ComponentName(this, NeonWordClockWidgetProvider.class));
+        if (widgetIds.length > 0) return widgetIds[0];
+
+        widgetIds = manager.getAppWidgetIds(new ComponentName(this, SmallWordClockWidgetProvider.class));
         if (widgetIds.length > 0) return widgetIds[0];
 
         return AppWidgetManager.INVALID_APPWIDGET_ID;

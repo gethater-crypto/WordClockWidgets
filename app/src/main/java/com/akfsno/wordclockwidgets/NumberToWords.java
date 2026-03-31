@@ -37,9 +37,12 @@ public class NumberToWords {
         return "";
     }
 
-    public static String convertMinute(int minute) {
-        if (minute == 0) return "ноль";
-        return convert(minute);
+    public static String convertSecond(int second, boolean useWords) {
+        if (useWords) {
+            return convert(second);
+        } else {
+            return String.valueOf(second);
+        }
     }
 
     private static String convert(int number) {
@@ -52,6 +55,44 @@ public class NumberToWords {
             int unit = number % 10;
             return tens[ten] + (unit > 0 ? " " + units[unit] : "");
         }
+    }
+
+    private static String convertOrdinal(int number) {
+        if (number == 1) return "первое";
+        if (number == 2) return "второе";
+        if (number == 3) return "третье";
+        if (number == 4) return "четвёртое";
+        if (number == 5) return "пятое";
+        if (number == 6) return "шестое";
+        if (number == 7) return "седьмое";
+        if (number == 8) return "восьмое";
+        if (number == 9) return "девятое";
+        if (number == 10) return "десятое";
+        if (number == 11) return "одиннадцатое";
+        if (number == 12) return "двенадцатое";
+        if (number == 13) return "тринадцатое";
+        if (number == 14) return "четырнадцатое";
+        if (number == 15) return "пятнадцатое";
+        if (number == 16) return "шестнадцатое";
+        if (number == 17) return "семнадцатое";
+        if (number == 18) return "восемнадцатое";
+        if (number == 19) return "девятнадцатое";
+        if (number == 20) return "двадцатое";
+        if (number == 30) return "тридцатое";
+        int ten = number / 10;
+        int unit = number % 10;
+        String tenStr = tens[ten];
+        String unitStr = "";
+        if (unit == 1) unitStr = "первое";
+        else if (unit == 2) unitStr = "второе";
+        else if (unit == 3) unitStr = "третье";
+        else if (unit == 4) unitStr = "четвёртое";
+        else if (unit == 5) unitStr = "пятое";
+        else if (unit == 6) unitStr = "шестое";
+        else if (unit == 7) unitStr = "седьмое";
+        else if (unit == 8) unitStr = "восьмое";
+        else if (unit == 9) unitStr = "девятое";
+        return tenStr + " " + unitStr;
     }
 
     public static String getDayNight(int hour) {
@@ -77,10 +118,9 @@ public class NumberToWords {
     };
 
     public static String convertDate(int day, int month, int year) {
-        String dayStr = convert(day);
+        String dayStr = convertOrdinal(day);
         String monthStr = months[month - 1];
-        String yearStr = convertYear(year);
-        return dayStr + " " + monthStr + " " + yearStr;
+        return dayStr + " " + monthStr;
     }
 
     private static String convertYear(int year) {

@@ -156,4 +156,104 @@ public class WidgetPreferences {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         return prefs.getBoolean("use12HourFormat_" + appWidgetId, defaultValue);
     }
+
+    public static void saveSecondsAsWords(Context context, int appWidgetId, boolean secondsAsWords) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putBoolean("secondsAsWords_" + appWidgetId, secondsAsWords).apply();
+    }
+
+    public static boolean getSecondsAsWords(Context context, int appWidgetId, boolean defaultValue) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getBoolean("secondsAsWords_" + appWidgetId, defaultValue);
+    }
+
+    public static void saveMinuteFontSize(Context context, int appWidgetId, float fontSize) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putFloat("minuteFontSize_" + appWidgetId, fontSize).apply();
+    }
+
+    public static float getMinuteFontSize(Context context, int appWidgetId, float defaultSize) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getFloat("minuteFontSize_" + appWidgetId, defaultSize);
+    }
+
+    public static void saveSecondOffsetX(Context context, int appWidgetId, int value) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putInt("second_offsetX_" + appWidgetId, value).apply();
+    }
+
+    public static int getSecondOffsetX(Context context, int appWidgetId, int defaultValue) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getInt("second_offsetX_" + appWidgetId, defaultValue);
+    }
+
+    public static void saveSecondOffsetY(Context context, int appWidgetId, int value) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putInt("second_offsetY_" + appWidgetId, value).apply();
+    }
+
+    public static int getSecondOffsetY(Context context, int appWidgetId, int defaultValue) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getInt("second_offsetY_" + appWidgetId, defaultValue);
+    }
+
+    public static void saveDateOffsetX(Context context, int appWidgetId, int value) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putInt("date_offsetX_" + appWidgetId, value).apply();
+    }
+
+    public static int getDateOffsetX(Context context, int appWidgetId, int defaultValue) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getInt("date_offsetX_" + appWidgetId, defaultValue);
+    }
+
+    public static void saveDateOffsetY(Context context, int appWidgetId, int value) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putInt("date_offsetY_" + appWidgetId, value).apply();
+    }
+
+    public static int getDateOffsetY(Context context, int appWidgetId, int defaultValue) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getInt("date_offsetY_" + appWidgetId, defaultValue);
+    }
+
+    public static void saveDayOfWeekOffsetX(Context context, int appWidgetId, int value) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putInt("dayOfWeek_offsetX_" + appWidgetId, value).apply();
+    }
+
+    public static int getDayOfWeekOffsetX(Context context, int appWidgetId, int defaultValue) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getInt("dayOfWeek_offsetX_" + appWidgetId, defaultValue);
+    }
+
+    public static void saveDayOfWeekOffsetY(Context context, int appWidgetId, int value) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putInt("dayOfWeek_offsetY_" + appWidgetId, value).apply();
+    }
+
+    public static int getDayOfWeekOffsetY(Context context, int appWidgetId, int defaultValue) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getInt("dayOfWeek_offsetY_" + appWidgetId, defaultValue);
+    }
+
+    public static void saveDayNightOffsetX(Context context, int appWidgetId, int value) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putInt("dayNight_offsetX_" + appWidgetId, value).apply();
+    }
+
+    public static int getDayNightOffsetX(Context context, int appWidgetId, int defaultValue) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getInt("dayNight_offsetX_" + appWidgetId, defaultValue);
+    }
+
+    public static void saveDayNightOffsetY(Context context, int appWidgetId, int value) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putInt("dayNight_offsetY_" + appWidgetId, value).apply();
+    }
+
+    public static int getDayNightOffsetY(Context context, int appWidgetId, int defaultValue) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getInt("dayNight_offsetY_" + appWidgetId, defaultValue);
+    }
 }

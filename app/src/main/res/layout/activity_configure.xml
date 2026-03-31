@@ -89,6 +89,43 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Секунды словами или цифрами:" />
+
+        <CheckBox
+            android:id="@+id/seconds_as_words_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Секунды словами" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Размер шрифта минут:" />
+
+        <SeekBar
+            android:id="@+id/minute_font_size_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="72"
+            android:min="8"
+            android:progress="24" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Размер шрифта секунд:" />
+
+        <SeekBar
+            android:id="@+id/second_font_size_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="72"
+            android:min="8"
+            android:progress="18" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="Показывать дату:" />
 
         <CheckBox
@@ -176,6 +213,94 @@
             android:text="Смещение минут по Y:" />
         <SeekBar
             android:id="@+id/minute_offset_y_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="0" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Смещение секунд по X:" />
+        <SeekBar
+            android:id="@+id/second_offset_x_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="0" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Смещение секунд по Y:" />
+        <SeekBar
+            android:id="@+id/second_offset_y_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="0" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Смещение даты по X:" />
+        <SeekBar
+            android:id="@+id/date_offset_x_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="0" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Смещение даты по Y:" />
+        <SeekBar
+            android:id="@+id/date_offset_y_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="0" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Смещение дня недели по X:" />
+        <SeekBar
+            android:id="@+id/day_of_week_offset_x_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="0" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Смещение дня недели по Y:" />
+        <SeekBar
+            android:id="@+id/day_of_week_offset_y_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="0" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Смещение времени суток по X:" />
+        <SeekBar
+            android:id="@+id/day_night_offset_x_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="0" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Смещение времени суток по Y:" />
+        <SeekBar
+            android:id="@+id/day_night_offset_y_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:max="100"

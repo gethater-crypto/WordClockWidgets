@@ -1,12 +1,13 @@
 package com.akfsno.wordclockwidgets;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.widget.RemoteViews;
 
 public class GreenWordClockWidgetProvider extends BaseWordClockWidgetProvider {
 
     @Override
-    protected int getLayoutResource() {
+    protected int getLayoutResource(Context context, int appWidgetId) {
         return R.layout.widget_layout_green;
     }
 

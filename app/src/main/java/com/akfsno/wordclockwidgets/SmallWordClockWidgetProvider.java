@@ -4,17 +4,18 @@ import android.content.Context;
 import android.graphics.Color;
 import android.widget.RemoteViews;
 
-public class HorizontalWordClockWidgetProvider extends BaseWordClockWidgetProvider {
+public class SmallWordClockWidgetProvider extends BaseWordClockWidgetProvider {
 
     @Override
     protected int getLayoutResource(Context context, int appWidgetId) {
-        return R.layout.horizontal_widget_layout;
+        return R.layout.widget_layout; // Or create a small layout
     }
 
     @Override
     protected void setTexts(RemoteViews views, String hourText, String minuteText, String dayNightText, String dayOfWeekText, String dateText) {
-        String timeText = hourText + " : " + minuteText.toLowerCase();
-        views.setTextViewText(R.id.time_text, timeText);
+        views.setTextViewText(R.id.hour_text, hourText);
+        views.setTextViewText(R.id.day_night_text, dayNightText);
+        views.setTextViewText(R.id.minute_text, minuteText);
     }
 
     @Override
