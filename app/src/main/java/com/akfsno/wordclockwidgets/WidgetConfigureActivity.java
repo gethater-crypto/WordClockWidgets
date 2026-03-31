@@ -60,6 +60,14 @@ public class WidgetConfigureActivity extends Activity {
             }
         }
 
+        // Initialize preview widgets
+        previewHourText = findViewById(R.id.preview_hour_text);
+        previewMinuteText = findViewById(R.id.preview_minute_text);
+        previewDayNightText = findViewById(R.id.preview_day_night_text);
+        previewDayOfWeekText = findViewById(R.id.preview_day_of_week_text);
+        previewDateText = findViewById(R.id.preview_date_text);
+        previewSecondText = findViewById(R.id.preview_second_text);
+
         styleSpinner = findViewById(R.id.style_spinner);
         ArrayAdapter<String> styleAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item,
                 new String[]{"Базовый", "Горизонтальный", "Расширенный", "Кислотный", "Неоновый", "Маленький"});
@@ -162,12 +170,6 @@ public class WidgetConfigureActivity extends Activity {
         dayNightOffsetXSeekBar.setProgress(dayNightOffsetX - minOffset);
         dayNightOffsetYSeekBar.setProgress(dayNightOffsetY - minOffset);
 
-        showSecondsCheckbox = findViewById(R.id.show_seconds_checkbox);
-        showDateCheckbox = findViewById(R.id.show_date_checkbox);
-        showDayOfWeekCheckbox = findViewById(R.id.show_day_of_week_checkbox);
-        use12HourCheckbox = findViewById(R.id.use_12hour_checkbox);
-        secondsAsWordsCheckbox = findViewById(R.id.seconds_as_words_checkbox);
-
         showSecondsCheckbox.setChecked(WidgetPreferences.getShowSeconds(this, appWidgetId, false));
         showDateCheckbox.setChecked(WidgetPreferences.getShowDate(this, appWidgetId, false));
         showDayOfWeekCheckbox.setChecked(WidgetPreferences.getShowDayOfWeek(this, appWidgetId, false));
@@ -186,6 +188,41 @@ public class WidgetConfigureActivity extends Activity {
         borderColorSpinner.setSelection(getPositionForColor(WidgetPreferences.getBorderColor(this, appWidgetId, Color.RED)));
         backgroundColorSpinner.setSelection(getPositionForColor(WidgetPreferences.getBackgroundColor(this, appWidgetId, Color.TRANSPARENT)));
 
+        // Add listeners for live preview
+        SeekBar.OnSeekBarChangeListener previewListener = new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    updatePreview();
+                }
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        };
+
+        CheckBox.OnCheckedChangeListener checkboxListener = (buttonView, isChecked) -> updatePreview();
+        Spinner.OnItemSelectedListener spinnerListener = new Spinner.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                updatePreview();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        };
+
+        fontSizeSeekBar.setOnSeekBarChangeListener(previewListener);
+        colorSpinner.setOnItemSelectedListener(spinnerListener);
+        borderColorSpinner.setOnItemSelectedListener(spinnerListener);
+        backgroundColorSpinner.setOnItemSelectedListener(spinnerListener);
+        backgroundAlphaSeekBar.setOnSeekBarChangeListener(previewListener);
+        
+        showSecondsCheckbox.setOnCheckedChangeListener(checkboxListener);
+        showDateCheckbox.setOnCheckedChangeListener(checkboxListener);
+        showDayOfWeekCheckbox.setOnCheckedChangeListener(checkboxListener);
+        use12HourCheckbox.setOnCheckedChangeListener(checkboxListener);
+
         Button saveButton = findViewById(R.id.save_button);
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -193,7 +230,99 @@ public class WidgetConfigureActivity extends Activity {
                 saveConfiguration();
             }
         });
+
+        // Start preview updates
+        startPreviewUpdates();
+        updatePreview();
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopPreviewUpdates();
+    }
+
+    private void startPreviewUpdates() {
+        previewUpdateRunnable = new Runnable() {
+            @Override
+            public void run() {
+                updatePreview();
+                previewHandler.postDelayed(this, 1000); // Update every second
+            }
+        };
+        previewHandler.post(previewUpdateRunnable);
+    }
+
+    private void stopPreviewUpdates() {
+        if (previewUpdateRunnable != null) {
+            previewHandler.removeCallbacks(previewUpdateRunnable);
+        }
+    }
+
+    private void updatePreview() {
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+3"));
+        boolean use12Hour = use12HourCheckbox.isChecked();
+        int rawHour = calendar.get(Calendar.HOUR_OF_DAY);
+        int hour = use12Hour ? calendar.get(Calendar.HOUR) : rawHour;
+        if (!use12Hour && hour < 0) hour = 0;
+        int minute = calendar.get(Calendar.MINUTE);
+        int second = calendar.get(Calendar.SECOND);
+        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int month = calendar.get(Calendar.MONTH) + 1;
+        int year = calendar.get(Calendar.YEAR);
+
+        String hourText = use12Hour ? NumberToWords.convertHour(hour) : NumberToWords.convertHour24(rawHour);
+        String minuteText = NumberToWords.convertMinute(minute);
+        String dayNightText = NumberToWords.getDayNight(rawHour);
+        String dayOfWeekText = NumberToWords.getDayOfWeek(dayOfWeek);
+        String dateText = NumberToWords.convertDate(day, month, year);
+        String secondText = NumberToWords.convertMinute(second);
+
+        previewHourText.setText(hourText);
+        previewDayNightText.setText(dayNightText);
+        previewMinuteText.setText(minuteText + (showSecondsCheckbox.isChecked() ? " " + secondText : ""));
+        
+        if (showDayOfWeekCheckbox.isChecked()) {
+            previewDayOfWeekText.setVisibility(View.VISIBLE);
+            previewDayOfWeekText.setText(dayOfWeekText);
+        } else {
+            previewDayOfWeekText.setVisibility(View.GONE);
+        }
+
+        if (showDateCheckbox.isChecked()) {
+            previewDateText.setVisibility(View.VISIBLE);
+            previewDateText.setText(dateText);
+        } else {
+            previewDateText.setVisibility(View.GONE);
+        }
+
+        if (showSecondsCheckbox.isChecked()) {
+            previewSecondText.setVisibility(View.VISIBLE);
+            previewSecondText.setText(secondText);
+        } else {
+            previewSecondText.setVisibility(View.GONE);
+        }
+
+        int textColor = getColorFromSpinner(colorSpinner);
+        float fontSize = fontSizeSeekBar.getProgress();
+        int backgroundColor = getColorFromSpinner(backgroundColorSpinner);
+        int backgroundAlpha = backgroundAlphaSeekBar.getProgress();
+        int bgColor = Color.argb(backgroundAlpha, Color.red(backgroundColor), Color.green(backgroundColor), Color.blue(backgroundColor));
+
+        previewHourText.setTextColor(textColor);
+        previewHourText.setTextSize(fontSize);
+        previewMinuteText.setTextColor(textColor);
+        previewMinuteText.setTextSize(fontSize);
+        previewDayNightText.setTextColor(getColorFromSpinner(borderColorSpinner));
+        previewDayOfWeekText.setTextColor(textColor);
+        previewDateText.setTextColor(textColor);
+        previewSecondText.setTextColor(textColor);
+
+        findViewById(R.id.widget_preview_container).setBackgroundColor(bgColor);
+    }
+
+    @Override
 
     private void saveConfiguration() {
         String style = (String) styleSpinner.getSelectedItem();
