@@ -118,6 +118,8 @@ public abstract class BaseWordClockWidgetProvider extends AppWidgetProvider {
         int month = calendar.get(Calendar.MONTH) + 1;
         int year = calendar.get(Calendar.YEAR);
 
+        boolean addZero = WidgetPreferences.getAddZero(context, appWidgetId, false);
+
         String hourText = use12Hour ? NumberToWords.convertHour(hour) : NumberToWords.convertHour24(rawHour);
         String minuteText = NumberToWords.convertMinute(minute, addZero);
         String dayNightText = NumberToWords.getDayNight(rawHour);
@@ -128,7 +130,6 @@ public abstract class BaseWordClockWidgetProvider extends AppWidgetProvider {
         boolean showDate = WidgetPreferences.getShowDate(context, appWidgetId, false);
         boolean showDayOfWeek = WidgetPreferences.getShowDayOfWeek(context, appWidgetId, false);
         boolean secondsAsWords = WidgetPreferences.getSecondsAsWords(context, appWidgetId, true);
-        boolean addZero = WidgetPreferences.getAddZero(context, appWidgetId, false);
         String secondsDisplayMode = WidgetPreferences.getSecondsDisplayMode(context, appWidgetId, "Горизонтально");
 
         String secondText;
@@ -202,40 +203,30 @@ public abstract class BaseWordClockWidgetProvider extends AppWidgetProvider {
         } else {
             views.setTextColor(R.id.hour_text, blockEnabled ? blockBorderColor : textColor);
             views.setTextViewTextSize(R.id.hour_text, 0, fontSize);
-            views.setViewTranslationX(R.id.hour_text, hourOffsetX);
-            views.setViewTranslationY(R.id.hour_text, hourOffsetY);
             if (blockEnabled) {
                 views.setInt(R.id.hour_text, "setBackgroundColor", blockBackgroundColor);
             }
 
             views.setTextColor(R.id.minute_text, blockEnabled ? blockBorderColor : textColor);
             views.setTextViewTextSize(R.id.minute_text, 0, minuteFontSize);
-            views.setViewTranslationX(R.id.minute_text, minuteOffsetX);
-            views.setViewTranslationY(R.id.minute_text, minuteOffsetY);
             if (blockEnabled) {
                 views.setInt(R.id.minute_text, "setBackgroundColor", blockBackgroundColor);
             }
 
             views.setTextColor(R.id.day_night_text, blockEnabled ? blockBorderColor : textColor);
             views.setTextViewTextSize(R.id.day_night_text, 0, fontSize * 0.75f);
-            views.setViewTranslationX(R.id.day_night_text, dayNightOffsetX);
-            views.setViewTranslationY(R.id.day_night_text, dayNightOffsetY);
             if (blockEnabled) {
                 views.setInt(R.id.day_night_text, "setBackgroundColor", blockBackgroundColor);
             }
 
             views.setTextColor(R.id.day_of_week_text, blockEnabled ? blockBorderColor : textColor);
             views.setTextViewTextSize(R.id.day_of_week_text, 0, fontSize * 0.6f);
-            views.setViewTranslationX(R.id.day_of_week_text, dayOfWeekOffsetX);
-            views.setViewTranslationY(R.id.day_of_week_text, dayOfWeekOffsetY);
             if (blockEnabled) {
                 views.setInt(R.id.day_of_week_text, "setBackgroundColor", blockBackgroundColor);
             }
             
             views.setTextColor(R.id.date_text, blockEnabled ? blockBorderColor : textColor);
             views.setTextViewTextSize(R.id.date_text, 0, fontSize * 0.5f);
-            views.setViewTranslationX(R.id.date_text, dateOffsetX);
-            views.setViewTranslationY(R.id.date_text, dateOffsetY);
             if (blockEnabled) {
                 views.setInt(R.id.date_text, "setBackgroundColor", blockBackgroundColor);
             }
@@ -247,8 +238,6 @@ public abstract class BaseWordClockWidgetProvider extends AppWidgetProvider {
 
             views.setTextColor(R.id.second_text, blockEnabled ? blockBorderColor : textColor);
             views.setTextViewTextSize(R.id.second_text, 0, secondFontSize);
-            views.setViewTranslationX(R.id.second_text, secondOffsetX);
-            views.setViewTranslationY(R.id.second_text, secondOffsetY);
             if (blockEnabled) {
                 views.setInt(R.id.second_text, "setBackgroundColor", blockBackgroundColor);
             }
