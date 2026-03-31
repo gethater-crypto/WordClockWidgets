@@ -45,6 +45,16 @@ public class NumberToWords {
         }
     }
 
+    public static String[] convertSecondVertical(int second, boolean useWords) {
+        if (useWords) {
+            String fullText = convert(second);
+            String[] words = fullText.split(" ");
+            return words;
+        } else {
+            return new String[]{String.valueOf(second)};
+        }
+    }
+
     public static String convertMinute(int minute) {
         if (minute == 0) {
             return "ноль";

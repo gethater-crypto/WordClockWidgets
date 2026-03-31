@@ -21,7 +21,8 @@ public abstract class BaseWordClockWidgetProvider extends AppWidgetProvider {
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
-        if (ACTION_UPDATE_TICK.equals(intent.getAction())) {
+        String action = intent.getAction();
+        if (action != null && action.startsWith(ACTION_UPDATE_TICK)) {
             AppWidgetManager manager = AppWidgetManager.getInstance(context);
             ComponentName provider = new ComponentName(context, getClass());
             int[] appWidgetIds = manager.getAppWidgetIds(provider);
@@ -44,13 +45,27 @@ public abstract class BaseWordClockWidgetProvider extends AppWidgetProvider {
 
     private void scheduleNextTick(Context context) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        
+        // Create unique action for each provider class to avoid conflicts
+        String action = ACTION_UPDATE_TICK + "." + getClass().getName();
         Intent intent = new Intent(context, getClass());
-        intent.setAction(ACTION_UPDATE_TICK);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        intent.setAction(action);
+        
+        // Use a unique request code based on action and class name
+        int requestCode = (getClass().getName().hashCode()) & 0x7fffffff;
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, 
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        long triggerAtMillis = System.currentTimeMillis() + 1000;
+        // Calculate next second boundary for more accurate updates
+        long currentTimeMillis = System.currentTimeMillis();
+        long millisUntilNextSecond = 1000 - (currentTimeMillis % 1000);
+        long triggerAtMillis = currentTimeMillis + millisUntilNextSecond;
+        
         if (alarmManager != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                // For Android 12 and above, use setAndAllowWhileIdle
+                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
             } else {
                 alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
@@ -60,9 +75,15 @@ public abstract class BaseWordClockWidgetProvider extends AppWidgetProvider {
 
     private void cancelTick(Context context) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        
+        String action = ACTION_UPDATE_TICK + "." + getClass().getName();
         Intent intent = new Intent(context, getClass());
-        intent.setAction(ACTION_UPDATE_TICK);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        intent.setAction(action);
+        
+        int requestCode = (getClass().getName().hashCode()) & 0x7fffffff;
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, 
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        
         if (alarmManager != null) {
             alarmManager.cancel(pendingIntent);
         }
@@ -125,6 +146,28 @@ public abstract class BaseWordClockWidgetProvider extends AppWidgetProvider {
         int hourOffsetY = WidgetPreferences.getOffsetY(context, appWidgetId, "hour", 0);
         int minuteOffsetX = WidgetPreferences.getOffsetX(context, appWidgetId, "minute", 0);
         int minuteOffsetY = WidgetPreferences.getOffsetY(context, appWidgetId, "minute", 0);
+        int secondOffsetX = WidgetPreferences.getSecondOffsetX(context, appWidgetId, 0);
+        int secondOffsetY = WidgetPreferences.getSecondOffsetY(context, appWidgetId, 0);
+        int dateOffsetX = WidgetPreferences.getDateOffsetX(context, appWidgetId, 0);
+        int dateOffsetY = WidgetPreferences.getDateOffsetY(context, appWidgetId, 0);
+        int dayOfWeekOffsetX = WidgetPreferences.getDayOfWeekOffsetX(context, appWidgetId, 0);
+        int dayOfWeekOffsetY = WidgetPreferences.getDayOfWeekOffsetY(context, appWidgetId, 0);
+        int dayNightOffsetX = WidgetPreferences.getDayNightOffsetX(context, appWidgetId, 0);
+        int dayNightOffsetY = WidgetPreferences.getDayNightOffsetY(context, appWidgetId, 0);
+
+        // Constrain offsets to valid range
+        hourOffsetX = WidgetPreferences.constrainOffset(hourOffsetX);
+        hourOffsetY = WidgetPreferences.constrainOffset(hourOffsetY);
+        minuteOffsetX = WidgetPreferences.constrainOffset(minuteOffsetX);
+        minuteOffsetY = WidgetPreferences.constrainOffset(minuteOffsetY);
+        secondOffsetX = WidgetPreferences.constrainOffset(secondOffsetX);
+        secondOffsetY = WidgetPreferences.constrainOffset(secondOffsetY);
+        dateOffsetX = WidgetPreferences.constrainOffset(dateOffsetX);
+        dateOffsetY = WidgetPreferences.constrainOffset(dateOffsetY);
+        dayOfWeekOffsetX = WidgetPreferences.constrainOffset(dayOfWeekOffsetX);
+        dayOfWeekOffsetY = WidgetPreferences.constrainOffset(dayOfWeekOffsetY);
+        dayNightOffsetX = WidgetPreferences.constrainOffset(dayNightOffsetX);
+        dayNightOffsetY = WidgetPreferences.constrainOffset(dayNightOffsetY);
 
         if (getLayoutResource(context, appWidgetId) == R.layout.horizontal_widget_layout) {
             views.setTextColor(R.id.time_text, textColor);
@@ -140,12 +183,15 @@ public abstract class BaseWordClockWidgetProvider extends AppWidgetProvider {
 
             views.setTextColor(R.id.day_night_text, borderColor);
             views.setTextViewTextSize(R.id.day_night_text, 0, fontSize * 0.75f);
-            views.setViewPadding(R.id.day_night_text, hourOffsetX / 2, hourOffsetY / 2, 0, 0);
+            views.setViewPadding(R.id.day_night_text, dayNightOffsetX, dayNightOffsetY, 0, 0);
 
             views.setTextColor(R.id.day_of_week_text, textColor);
             views.setTextViewTextSize(R.id.day_of_week_text, 0, fontSize * 0.6f);
+            views.setViewPadding(R.id.day_of_week_text, dayOfWeekOffsetX, dayOfWeekOffsetY, 0, 0);
+            
             views.setTextColor(R.id.date_text, textColor);
             views.setTextViewTextSize(R.id.date_text, 0, fontSize * 0.5f);
+            views.setViewPadding(R.id.date_text, dateOffsetX, dateOffsetY, 0, 0);
 
             views.setTextViewText(R.id.day_of_week_text, showDayOfWeek ? dayOfWeekText : "");
             views.setTextViewText(R.id.date_text, showDate ? dateText : "");

@@ -12,7 +12,86 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Стиль виджета:" />
+            android:text="Предпросмотр виджета:"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp" />
+
+        <FrameLayout
+            android:id="@+id/widget_preview_container"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/widget_border">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/preview_hour_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Четыре"
+                    android:textColor="@android:color/black"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/preview_day_night_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="дня"
+                    android:textColor="@android:color/holo_red_dark"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/preview_day_of_week_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Понедельник"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/preview_date_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Тринадцатое марта"
+                    android:textColor="@android:color/black"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/preview_minute_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Сорок три"
+                    android:textColor="@android:color/black"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/preview_second_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="пять"
+                    android:textColor="@android:color/black"
+                    android:textSize="18sp"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Стиль виджета:"
+            android:layout_marginTop="16dp" />
 
         <Spinner
             android:id="@+id/style_spinner"
@@ -182,8 +261,8 @@
             android:id="@+id/hour_offset_x_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="0" />
+            android:max="400"
+            android:progress="200" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -193,8 +272,8 @@
             android:id="@+id/hour_offset_y_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="0" />
+            android:max="400"
+            android:progress="200" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -204,8 +283,8 @@
             android:id="@+id/minute_offset_x_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="0" />
+            android:max="400"
+            android:progress="200" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -215,8 +294,8 @@
             android:id="@+id/minute_offset_y_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="0" />
+            android:max="400"
+            android:progress="200" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -226,8 +305,8 @@
             android:id="@+id/second_offset_x_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="0" />
+            android:max="400"
+            android:progress="200" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -237,8 +316,8 @@
             android:id="@+id/second_offset_y_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="0" />
+            android:max="400"
+            android:progress="200" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -248,8 +327,8 @@
             android:id="@+id/date_offset_x_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="0" />
+            android:max="400"
+            android:progress="200" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -259,8 +338,8 @@
             android:id="@+id/date_offset_y_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="0" />
+            android:max="400"
+            android:progress="200" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -270,8 +349,8 @@
             android:id="@+id/day_of_week_offset_x_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="0" />
+            android:max="400"
+            android:progress="200" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -281,8 +360,8 @@
             android:id="@+id/day_of_week_offset_y_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="0" />
+            android:max="400"
+            android:progress="200" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -292,8 +371,8 @@
             android:id="@+id/day_night_offset_x_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="0" />
+            android:max="400"
+            android:progress="200" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -303,8 +382,8 @@
             android:id="@+id/day_night_offset_y_seekbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="0" />
+            android:max="400"
+            android:progress="200" />
 
         <Button
             android:id="@+id/save_button"

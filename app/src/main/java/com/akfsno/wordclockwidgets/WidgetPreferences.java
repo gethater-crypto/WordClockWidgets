@@ -266,4 +266,30 @@ public class WidgetPreferences {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         return prefs.getInt("dayNight_offsetY_" + appWidgetId, defaultValue);
     }
+
+    public static void saveSecondsDisplayMode(Context context, int appWidgetId, String mode) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString("secondsDisplayMode_" + appWidgetId, mode).apply();
+    }
+
+    public static String getSecondsDisplayMode(Context context, int appWidgetId, String defaultMode) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getString("secondsDisplayMode_" + appWidgetId, defaultMode);
+    }
+
+    // Constants for offset bounds
+    private static final int MAX_OFFSET = 200;
+    private static final int MIN_OFFSET = -200;
+
+    public static int constrainOffset(int value) {
+        return Math.max(MIN_OFFSET, Math.min(MAX_OFFSET, value));
+    }
+
+    public static int getMaxOffset() {
+        return MAX_OFFSET;
+    }
+
+    public static int getMinOffset() {
+        return MIN_OFFSET;
+    }
 }

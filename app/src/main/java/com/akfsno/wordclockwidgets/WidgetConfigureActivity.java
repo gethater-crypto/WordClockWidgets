@@ -8,13 +8,18 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.SeekBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 public class WidgetConfigureActivity extends Activity {
 
@@ -26,6 +31,11 @@ public class WidgetConfigureActivity extends Activity {
     private CheckBox showSecondsCheckbox, showDateCheckbox, showDayOfWeekCheckbox, use12HourCheckbox, secondsAsWordsCheckbox;
     private SeekBar minuteFontSizeSeekBar, secondFontSizeSeekBar;
     private SeekBar secondOffsetXSeekBar, secondOffsetYSeekBar, dateOffsetXSeekBar, dateOffsetYSeekBar, dayOfWeekOffsetXSeekBar, dayOfWeekOffsetYSeekBar, dayNightOffsetXSeekBar, dayNightOffsetYSeekBar;
+    
+    // Preview widgets
+    private TextView previewHourText, previewMinuteText, previewDayNightText, previewDayOfWeekText, previewDateText, previewSecondText;
+    private Handler previewHandler = new Handler(Looper.getMainLooper());
+    private Runnable previewUpdateRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,10 +92,28 @@ public class WidgetConfigureActivity extends Activity {
         minuteOffsetXSeekBar = findViewById(R.id.minute_offset_x_seekbar);
         minuteOffsetYSeekBar = findViewById(R.id.minute_offset_y_seekbar);
 
-        hourOffsetXSeekBar.setProgress(WidgetPreferences.getOffsetX(this, appWidgetId, "hour", 0));
-        hourOffsetYSeekBar.setProgress(WidgetPreferences.getOffsetY(this, appWidgetId, "hour", 0));
-        minuteOffsetXSeekBar.setProgress(WidgetPreferences.getOffsetX(this, appWidgetId, "minute", 0));
-        minuteOffsetYSeekBar.setProgress(WidgetPreferences.getOffsetY(this, appWidgetId, "minute", 0));
+        // Set seekbar ranges and initial positions
+        int maxOffset = WidgetPreferences.getMaxOffset();
+        int minOffset = WidgetPreferences.getMinOffset();
+        int offsetRange = maxOffset - minOffset; // 400
+
+        hourOffsetXSeekBar.setMax(offsetRange);
+        hourOffsetYSeekBar.setMax(offsetRange);
+        minuteOffsetXSeekBar.setMax(offsetRange);
+        minuteOffsetYSeekBar.setMax(offsetRange);
+
+        // Set initial progress with center position (progress 200 = 0 offset)
+        int centerProgress = (0 - minOffset); // Center position = 200
+
+        int hourOffsetX = WidgetPreferences.getOffsetX(this, appWidgetId, "hour", 0);
+        int hourOffsetY = WidgetPreferences.getOffsetY(this, appWidgetId, "hour", 0);
+        int minuteOffsetX = WidgetPreferences.getOffsetX(this, appWidgetId, "minute", 0);
+        int minuteOffsetY = WidgetPreferences.getOffsetY(this, appWidgetId, "minute", 0);
+
+        hourOffsetXSeekBar.setProgress(hourOffsetX - minOffset);
+        hourOffsetYSeekBar.setProgress(hourOffsetY - minOffset);
+        minuteOffsetXSeekBar.setProgress(minuteOffsetX - minOffset);
+        minuteOffsetYSeekBar.setProgress(minuteOffsetY - minOffset);
 
         showSecondsCheckbox = findViewById(R.id.show_seconds_checkbox);
         showDateCheckbox = findViewById(R.id.show_date_checkbox);
@@ -105,6 +133,41 @@ public class WidgetConfigureActivity extends Activity {
         dayNightOffsetXSeekBar = findViewById(R.id.day_night_offset_x_seekbar);
         dayNightOffsetYSeekBar = findViewById(R.id.day_night_offset_y_seekbar);
 
+        // Set ranges for additional offset seekbars
+        secondOffsetXSeekBar.setMax(offsetRange);
+        secondOffsetYSeekBar.setMax(offsetRange);
+        dateOffsetXSeekBar.setMax(offsetRange);
+        dateOffsetYSeekBar.setMax(offsetRange);
+        dayOfWeekOffsetXSeekBar.setMax(offsetRange);
+        dayOfWeekOffsetYSeekBar.setMax(offsetRange);
+        dayNightOffsetXSeekBar.setMax(offsetRange);
+        dayNightOffsetYSeekBar.setMax(offsetRange);
+
+        // Set initial progress with bounded offsets
+        int secondOffsetX = WidgetPreferences.getSecondOffsetX(this, appWidgetId, 0);
+        int secondOffsetY = WidgetPreferences.getSecondOffsetY(this, appWidgetId, 0);
+        int dateOffsetX = WidgetPreferences.getDateOffsetX(this, appWidgetId, 0);
+        int dateOffsetY = WidgetPreferences.getDateOffsetY(this, appWidgetId, 0);
+        int dayOfWeekOffsetX = WidgetPreferences.getDayOfWeekOffsetX(this, appWidgetId, 0);
+        int dayOfWeekOffsetY = WidgetPreferences.getDayOfWeekOffsetY(this, appWidgetId, 0);
+        int dayNightOffsetX = WidgetPreferences.getDayNightOffsetX(this, appWidgetId, 0);
+        int dayNightOffsetY = WidgetPreferences.getDayNightOffsetY(this, appWidgetId, 0);
+
+        secondOffsetXSeekBar.setProgress(secondOffsetX - minOffset);
+        secondOffsetYSeekBar.setProgress(secondOffsetY - minOffset);
+        dateOffsetXSeekBar.setProgress(dateOffsetX - minOffset);
+        dateOffsetYSeekBar.setProgress(dateOffsetY - minOffset);
+        dayOfWeekOffsetXSeekBar.setProgress(dayOfWeekOffsetX - minOffset);
+        dayOfWeekOffsetYSeekBar.setProgress(dayOfWeekOffsetY - minOffset);
+        dayNightOffsetXSeekBar.setProgress(dayNightOffsetX - minOffset);
+        dayNightOffsetYSeekBar.setProgress(dayNightOffsetY - minOffset);
+
+        showSecondsCheckbox = findViewById(R.id.show_seconds_checkbox);
+        showDateCheckbox = findViewById(R.id.show_date_checkbox);
+        showDayOfWeekCheckbox = findViewById(R.id.show_day_of_week_checkbox);
+        use12HourCheckbox = findViewById(R.id.use_12hour_checkbox);
+        secondsAsWordsCheckbox = findViewById(R.id.seconds_as_words_checkbox);
+
         showSecondsCheckbox.setChecked(WidgetPreferences.getShowSeconds(this, appWidgetId, false));
         showDateCheckbox.setChecked(WidgetPreferences.getShowDate(this, appWidgetId, false));
         showDayOfWeekCheckbox.setChecked(WidgetPreferences.getShowDayOfWeek(this, appWidgetId, false));
@@ -113,15 +176,6 @@ public class WidgetConfigureActivity extends Activity {
 
         minuteFontSizeSeekBar.setProgress((int) WidgetPreferences.getMinuteFontSize(this, appWidgetId, 24f));
         secondFontSizeSeekBar.setProgress((int) WidgetPreferences.getSecondFontSize(this, appWidgetId, 18f));
-
-        secondOffsetXSeekBar.setProgress(WidgetPreferences.getSecondOffsetX(this, appWidgetId, 0));
-        secondOffsetYSeekBar.setProgress(WidgetPreferences.getSecondOffsetY(this, appWidgetId, 0));
-        dateOffsetXSeekBar.setProgress(WidgetPreferences.getDateOffsetX(this, appWidgetId, 0));
-        dateOffsetYSeekBar.setProgress(WidgetPreferences.getDateOffsetY(this, appWidgetId, 0));
-        dayOfWeekOffsetXSeekBar.setProgress(WidgetPreferences.getDayOfWeekOffsetX(this, appWidgetId, 0));
-        dayOfWeekOffsetYSeekBar.setProgress(WidgetPreferences.getDayOfWeekOffsetY(this, appWidgetId, 0));
-        dayNightOffsetXSeekBar.setProgress(WidgetPreferences.getDayNightOffsetX(this, appWidgetId, 0));
-        dayNightOffsetYSeekBar.setProgress(WidgetPreferences.getDayNightOffsetY(this, appWidgetId, 0));
 
         String savedStyle = WidgetPreferences.getStyle(this, appWidgetId, "Базовый");
         int stylePosition = getStylePosition(savedStyle);
@@ -163,10 +217,26 @@ public class WidgetConfigureActivity extends Activity {
         int backgroundAlpha = backgroundAlphaSeekBar.getProgress();
         WidgetPreferences.saveBackgroundAlpha(this, appWidgetId, backgroundAlpha);
 
-        WidgetPreferences.saveOffsetX(this, appWidgetId, "hour", hourOffsetXSeekBar.getProgress());
-        WidgetPreferences.saveOffsetY(this, appWidgetId, "hour", hourOffsetYSeekBar.getProgress());
-        WidgetPreferences.saveOffsetX(this, appWidgetId, "minute", minuteOffsetXSeekBar.getProgress());
-        WidgetPreferences.saveOffsetY(this, appWidgetId, "minute", minuteOffsetYSeekBar.getProgress());
+        // Convert bounded progress values back to real offsets
+        int minOffset = WidgetPreferences.getMinOffset();
+        
+        int hourOffsetX = WidgetPreferences.constrainOffset(hourOffsetXSeekBar.getProgress() + minOffset);
+        int hourOffsetY = WidgetPreferences.constrainOffset(hourOffsetYSeekBar.getProgress() + minOffset);
+        int minuteOffsetX = WidgetPreferences.constrainOffset(minuteOffsetXSeekBar.getProgress() + minOffset);
+        int minuteOffsetY = WidgetPreferences.constrainOffset(minuteOffsetYSeekBar.getProgress() + minOffset);
+        int secondOffsetX = WidgetPreferences.constrainOffset(secondOffsetXSeekBar.getProgress() + minOffset);
+        int secondOffsetY = WidgetPreferences.constrainOffset(secondOffsetYSeekBar.getProgress() + minOffset);
+        int dateOffsetX = WidgetPreferences.constrainOffset(dateOffsetXSeekBar.getProgress() + minOffset);
+        int dateOffsetY = WidgetPreferences.constrainOffset(dateOffsetYSeekBar.getProgress() + minOffset);
+        int dayOfWeekOffsetX = WidgetPreferences.constrainOffset(dayOfWeekOffsetXSeekBar.getProgress() + minOffset);
+        int dayOfWeekOffsetY = WidgetPreferences.constrainOffset(dayOfWeekOffsetYSeekBar.getProgress() + minOffset);
+        int dayNightOffsetX = WidgetPreferences.constrainOffset(dayNightOffsetXSeekBar.getProgress() + minOffset);
+        int dayNightOffsetY = WidgetPreferences.constrainOffset(dayNightOffsetYSeekBar.getProgress() + minOffset);
+
+        WidgetPreferences.saveOffsetX(this, appWidgetId, "hour", hourOffsetX);
+        WidgetPreferences.saveOffsetY(this, appWidgetId, "hour", hourOffsetY);
+        WidgetPreferences.saveOffsetX(this, appWidgetId, "minute", minuteOffsetX);
+        WidgetPreferences.saveOffsetY(this, appWidgetId, "minute", minuteOffsetY);
 
         WidgetPreferences.saveShowSeconds(this, appWidgetId, showSecondsCheckbox.isChecked());
         WidgetPreferences.saveShowDate(this, appWidgetId, showDateCheckbox.isChecked());
@@ -177,14 +247,14 @@ public class WidgetConfigureActivity extends Activity {
         WidgetPreferences.saveMinuteFontSize(this, appWidgetId, minuteFontSizeSeekBar.getProgress());
         WidgetPreferences.saveSecondFontSize(this, appWidgetId, secondFontSizeSeekBar.getProgress());
 
-        WidgetPreferences.saveSecondOffsetX(this, appWidgetId, secondOffsetXSeekBar.getProgress());
-        WidgetPreferences.saveSecondOffsetY(this, appWidgetId, secondOffsetYSeekBar.getProgress());
-        WidgetPreferences.saveDateOffsetX(this, appWidgetId, dateOffsetXSeekBar.getProgress());
-        WidgetPreferences.saveDateOffsetY(this, appWidgetId, dateOffsetYSeekBar.getProgress());
-        WidgetPreferences.saveDayOfWeekOffsetX(this, appWidgetId, dayOfWeekOffsetXSeekBar.getProgress());
-        WidgetPreferences.saveDayOfWeekOffsetY(this, appWidgetId, dayOfWeekOffsetYSeekBar.getProgress());
-        WidgetPreferences.saveDayNightOffsetX(this, appWidgetId, dayNightOffsetXSeekBar.getProgress());
-        WidgetPreferences.saveDayNightOffsetY(this, appWidgetId, dayNightOffsetYSeekBar.getProgress());
+        WidgetPreferences.saveSecondOffsetX(this, appWidgetId, secondOffsetX);
+        WidgetPreferences.saveSecondOffsetY(this, appWidgetId, secondOffsetY);
+        WidgetPreferences.saveDateOffsetX(this, appWidgetId, dateOffsetX);
+        WidgetPreferences.saveDateOffsetY(this, appWidgetId, dateOffsetY);
+        WidgetPreferences.saveDayOfWeekOffsetX(this, appWidgetId, dayOfWeekOffsetX);
+        WidgetPreferences.saveDayOfWeekOffsetY(this, appWidgetId, dayOfWeekOffsetY);
+        WidgetPreferences.saveDayNightOffsetX(this, appWidgetId, dayNightOffsetX);
+        WidgetPreferences.saveDayNightOffsetY(this, appWidgetId, dayNightOffsetY);
 
         Intent resultValue = new Intent();
         resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
