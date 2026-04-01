@@ -6,8 +6,11 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,7 +19,7 @@ import java.util.Calendar;
 public class BasicStyleActivity extends Activity {
 
     private int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-    private TextView previewHour, previewMinute, previewDayNight, previewDate, previewDayOfWeek;
+    private TextView previewHour, previewMinute, previewDayNight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,13 +41,13 @@ public class BasicStyleActivity extends Activity {
         previewHour = findViewById(R.id.preview_hour);
         previewMinute = findViewById(R.id.preview_minute);
         previewDayNight = findViewById(R.id.preview_day_night);
-        previewDate = findViewById(R.id.preview_date);
-        previewDayOfWeek = findViewById(R.id.preview_day_of_week);
 
         // Setup UI elements
         setupBackgroundColor();
         setupBackgroundAlpha();
         setupTextColor();
+        setupBorderColor();
+        setupBorderWidth();
         setupHourSize();
         setupMinuteSize();
 
@@ -56,9 +59,10 @@ public class BasicStyleActivity extends Activity {
     }
 
     private void setupBackgroundColor() {
-        SeekBar seekBar = findViewById(R.id.background_color_seekbar);
+        Spinner spinner = findViewById(R.id.background_color_spinner);
         TextView valueText = findViewById(R.id.background_color_value);
         int[] colors = {0xFFFFFFFF, 0xFF000000, 0xFFFF0000, 0xFF00FF00, 0xFF0000FF, 0xFFFFFF00};
+        String[] names = {"Белый", "Чёрный", "Красный", "Зелёный", "Синий", "Жёлтый"};
         int current = WidgetPreferences.getBackgroundColor(this, appWidgetId, 0xFFFFFFFF);
         int currentIndex = 0;
         for (int i = 0; i < colors.length; i++) {
@@ -67,23 +71,23 @@ public class BasicStyleActivity extends Activity {
                 break;
             }
         }
-        seekBar.setMax(colors.length - 1);
-        seekBar.setProgress(currentIndex);
-        valueText.setText(getColorName(colors[currentIndex]));
 
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, names);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setSelection(currentIndex);
+        valueText.setText(names[currentIndex]);
+
+        spinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                WidgetPreferences.saveBackgroundColor(BasicStyleActivity.this, appWidgetId, colors[progress]);
-                valueText.setText(getColorName(colors[progress]));
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                WidgetPreferences.saveBackgroundColor(BasicStyleActivity.this, appWidgetId, colors[position]);
+                valueText.setText(names[position]);
                 updatePreview();
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            public void onNothingSelected(android.widget.AdapterView<?> parent) { }
         });
     }
 
@@ -112,9 +116,10 @@ public class BasicStyleActivity extends Activity {
     }
 
     private void setupTextColor() {
-        SeekBar seekBar = findViewById(R.id.text_color_seekbar);
+        Spinner spinner = findViewById(R.id.text_color_spinner);
         TextView valueText = findViewById(R.id.text_color_value);
         int[] colors = {0xFF000000, 0xFFFFFFFF, 0xFFFF0000, 0xFF00FF00, 0xFF0000FF};
+        String[] names = {"Чёрный", "Белый", "Красный", "Зелёный", "Синий"};
         int current = WidgetPreferences.getHourTextColor(this, appWidgetId, 0xFF000000);
         int currentIndex = 0;
         for (int i = 0; i < colors.length; i++) {
@@ -123,20 +128,76 @@ public class BasicStyleActivity extends Activity {
                 break;
             }
         }
-        seekBar.setMax(colors.length - 1);
-        seekBar.setProgress(currentIndex);
-        valueText.setText(getColorName(colors[currentIndex]));
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, names);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setSelection(currentIndex);
+        valueText.setText(names[currentIndex]);
+
+        spinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                int color = colors[position];
+                WidgetPreferences.saveHourTextColor(BasicStyleActivity.this, appWidgetId, color);
+                WidgetPreferences.saveMinuteTextColor(BasicStyleActivity.this, appWidgetId, color);
+                WidgetPreferences.saveDayNightTextColor(BasicStyleActivity.this, appWidgetId, color);
+                valueText.setText(names[position]);
+                updatePreview();
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) { }
+        });
+    }
+
+    private void setupBorderColor() {
+        Spinner spinner = findViewById(R.id.border_color_spinner);
+        TextView valueText = findViewById(R.id.border_color_value);
+        int[] colors = {0xFF000000, 0xFFFFFFFF, 0xFFFF0000, 0xFF00FF00, 0xFF0000FF, 0xFFFFFF00};
+        String[] names = {"Чёрный", "Белый", "Красный", "Зелёный", "Синий", "Жёлтый"};
+        int current = WidgetPreferences.getBorderColor(this, appWidgetId, getResources().getColor(android.R.color.holo_red_dark));
+        int currentIndex = 0;
+        for (int i = 0; i < colors.length; i++) {
+            if (colors[i] == current) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, names);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setSelection(currentIndex);
+        valueText.setText(names[currentIndex]);
+
+        spinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                WidgetPreferences.saveBorderColor(BasicStyleActivity.this, appWidgetId, colors[position]);
+                valueText.setText(names[position]);
+                updatePreview();
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) { }
+        });
+    }
+
+    private void setupBorderWidth() {
+        SeekBar seekBar = findViewById(R.id.border_width_seekbar);
+        TextView valueText = findViewById(R.id.border_width_value);
+        int current = WidgetPreferences.getBorderWidth(this, appWidgetId, 2);
+        seekBar.setMax(20);
+        seekBar.setProgress(current);
+        valueText.setText(String.valueOf(current));
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                int color = colors[progress];
-                WidgetPreferences.saveHourTextColor(BasicStyleActivity.this, appWidgetId, color);
-                WidgetPreferences.saveMinuteTextColor(BasicStyleActivity.this, appWidgetId, color);
-                WidgetPreferences.saveDayNightTextColor(BasicStyleActivity.this, appWidgetId, color);
-                WidgetPreferences.saveDateTextColor(BasicStyleActivity.this, appWidgetId, color);
-                WidgetPreferences.saveDayOfWeekTextColor(BasicStyleActivity.this, appWidgetId, color);
-                valueText.setText(getColorName(color));
+                int width = Math.max(1, progress);
+                WidgetPreferences.saveBorderWidth(BasicStyleActivity.this, appWidgetId, width);
+                valueText.setText(String.valueOf(width));
                 updatePreview();
             }
 
@@ -225,29 +286,23 @@ public class BasicStyleActivity extends Activity {
         String hourText = use12 ? NumberToWords.convertHour(hour24) : NumberToWords.convertHour24(hour24);
         String minuteText = NumberToWords.convertMinute(calendar.get(Calendar.MINUTE), WidgetPreferences.getAddZeroMinute(this, appWidgetId, false));
         String dayNightText = NumberToWords.getDayNight(hour24);
-        String dateText = NumberToWords.convertDate(calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR));
-        String dayOfWeekText = NumberToWords.getDayOfWeek(calendar.get(Calendar.DAY_OF_WEEK) - 1);
 
         previewHour.setText(hourText);
         previewMinute.setText(minuteText);
         previewDayNight.setText(dayNightText);
-        previewDate.setText(dateText);
-        previewDayOfWeek.setText(dayOfWeekText);
 
-        previewHour.setTextColor(WidgetPreferences.getHourTextColor(this, appWidgetId, getResources().getColor(android.R.color.black)));
-        previewMinute.setTextColor(WidgetPreferences.getMinuteTextColor(this, appWidgetId, getResources().getColor(android.R.color.black)));
+        int textColor = WidgetPreferences.getHourTextColor(this, appWidgetId, getResources().getColor(android.R.color.black));
+        previewHour.setTextColor(textColor);
+        previewMinute.setTextColor(textColor);
         previewDayNight.setTextColor(WidgetPreferences.getDayNightTextColor(this, appWidgetId, getResources().getColor(android.R.color.holo_red_dark)));
-        previewDate.setTextColor(WidgetPreferences.getDateTextColor(this, appWidgetId, getResources().getColor(android.R.color.black)));
-        previewDayOfWeek.setTextColor(WidgetPreferences.getDayOfWeekTextColor(this, appWidgetId, getResources().getColor(android.R.color.black)));
 
         previewHour.setTextSize(WidgetPreferences.getFontSize(this, appWidgetId, 24f));
         previewMinute.setTextSize(WidgetPreferences.getMinuteFontSize(this, appWidgetId, 24f));
+        previewDayNight.setTextSize(18f);
 
-        previewHour.setVisibility(WidgetPreferences.getShowHour(this, appWidgetId, true) ? View.VISIBLE : View.GONE);
-        previewMinute.setVisibility(WidgetPreferences.getShowMinute(this, appWidgetId, true) ? View.VISIBLE : View.GONE);
-        previewDayNight.setVisibility(WidgetPreferences.getShowDayNight(this, appWidgetId, true) ? View.VISIBLE : View.GONE);
-        previewDate.setVisibility(WidgetPreferences.getShowDate(this, appWidgetId, true) ? View.VISIBLE : View.GONE);
-        previewDayOfWeek.setVisibility(WidgetPreferences.getShowDayOfWeek(this, appWidgetId, true) ? View.VISIBLE : View.GONE);
+        previewHour.setVisibility(View.VISIBLE);
+        previewMinute.setVisibility(View.VISIBLE);
+        previewDayNight.setVisibility(View.VISIBLE);
     }
 
     private void saveAndFinish() {
