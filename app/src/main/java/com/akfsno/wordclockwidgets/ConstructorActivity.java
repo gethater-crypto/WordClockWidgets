@@ -16,7 +16,8 @@ public class ConstructorActivity extends Activity {
 
     private int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private String widgetProviderClass = WordClockWidgetProvider.class.getName();
-    private TextView previewHour, previewMinute, previewDayNight;
+    private View hourWrapper, minuteWrapper, dayNightWrapper, dateWrapper, dayOfWeekWrapper;
+    private TextView previewHour, previewMinute, previewDayNight, previewDate, previewDayOfWeek;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,14 +43,22 @@ public class ConstructorActivity extends Activity {
             }
         }
 
-        // Initialize preview views
-        previewHour = findViewById(R.id.preview_hour);
-        previewMinute = findViewById(R.id.preview_minute);
-        previewDayNight = findViewById(R.id.preview_day_night);
+        // Initialize preview views (real widget layout)
+        hourWrapper = findViewById(R.id.hour_wrapper);
+        minuteWrapper = findViewById(R.id.minute_wrapper);
+        dayNightWrapper = findViewById(R.id.day_night_wrapper);
+        dateWrapper = findViewById(R.id.date_wrapper);
+        dayOfWeekWrapper = findViewById(R.id.day_of_week_wrapper);
 
-        // Remove elements that are not used in basic mode from preview
-        View previewDate = findViewById(R.id.preview_date);
-        View previewDayOfWeek = findViewById(R.id.preview_day_of_week);
+        previewHour = findViewById(R.id.hour_text);
+        previewMinute = findViewById(R.id.minute_text);
+        previewDayNight = findViewById(R.id.day_night_text);
+        previewDate = findViewById(R.id.date_text);
+        previewDayOfWeek = findViewById(R.id.day_of_week_text);
+
+        // Keep behavior for basic mode: hide date/dayOfWeek if they are not used
+        if (previewDate != null) previewDate.setVisibility(View.GONE);
+        if (previewDayOfWeek != null) previewDayOfWeek.setVisibility(View.GONE);
         if (previewDate != null) previewDate.setVisibility(View.GONE);
         if (previewDayOfWeek != null) previewDayOfWeek.setVisibility(View.GONE);
 
@@ -70,56 +79,11 @@ public class ConstructorActivity extends Activity {
     }
 
     private void updatePreview() {
-        int bgColor = WidgetPreferences.getBackgroundColor(this, appWidgetId, 0xFFFFFFFF);
-        int alpha = WidgetPreferences.getBackgroundAlpha(this, appWidgetId, 255);
-        bgColor = (bgColor & 0x00FFFFFF) | ((alpha & 0xFF) << 24);
-
-        View container = findViewById(R.id.preview_container);
-        android.graphics.drawable.Drawable bg = container.getBackground();
-        if (bg instanceof android.graphics.drawable.GradientDrawable) {
-            android.graphics.drawable.GradientDrawable drawable = (android.graphics.drawable.GradientDrawable) bg.mutate();
-            drawable.setColor(bgColor);
-            int borderColor = WidgetPreferences.getBorderColor(this, appWidgetId, getResources().getColor(android.R.color.holo_red_dark));
-            drawable.setStroke(WidgetPreferences.getBorderWidth(this, appWidgetId, 2), borderColor);
-        } else {
-            container.setBackgroundColor(bgColor);
-        }
-
-        updatePreviewText();
+        BaseWordClockWidgetProvider.updateLocalWidgetView(this, findViewById(R.id.preview_container), appWidgetId);
     }
 
     private void updatePreviewText() {
-        Calendar calendar = Calendar.getInstance();
-        int hour24 = calendar.get(Calendar.HOUR_OF_DAY);
-        boolean use12 = WidgetPreferences.getUse12HourFormat(this, appWidgetId, true);
-
-        String hourText = use12 ? NumberToWords.convertHour(hour24) : NumberToWords.convertHour24(hour24);
-        String minuteText = NumberToWords.convertMinute(calendar.get(Calendar.MINUTE), WidgetPreferences.getAddZeroMinute(this, appWidgetId, false), use12);
-
-        if (!use12 && hour24 == 0 && calendar.get(Calendar.MINUTE) == 0) {
-            hourText = "двенадцать";
-            minuteText = "ноль-ноль";
-        }
-        String dayNightText = NumberToWords.getDayNight(hour24);
-
-        previewHour.setText(hourText);
-        previewMinute.setText(minuteText);
-        previewDayNight.setText(dayNightText);
-
-        int textColor = WidgetPreferences.getHourTextColor(this, appWidgetId, getResources().getColor(android.R.color.black));
-        previewHour.setTextColor(textColor);
-        previewMinute.setTextColor(textColor);
-        previewDayNight.setTextColor(WidgetPreferences.getDayNightTextColor(this, appWidgetId, getResources().getColor(android.R.color.holo_red_dark)));
-
-        previewHour.setTextSize(WidgetPreferences.getFontSize(this, appWidgetId, 24f));
-        previewMinute.setTextSize(WidgetPreferences.getMinuteFontSize(this, appWidgetId, 24f));
-        previewDayNight.setTextSize(WidgetPreferences.getDayNightFontSize(this, appWidgetId, 18f));
-
-        previewHour.setVisibility(View.VISIBLE);
-        previewMinute.setVisibility(View.VISIBLE);
-        previewDayNight.setVisibility(View.VISIBLE);
-
-        adjustPreviewTextSizes();
+        updatePreview();
     }
 
     private void adjustPreviewTextSizes() {
@@ -158,14 +122,18 @@ public class ConstructorActivity extends Activity {
             scale = availablePx / totalPx;
         }
 
-        if (showHour) {
-            previewHour.setTextSize(TypedValue.COMPLEX_UNIT_SP, hourSize * scale);
+        TextView hourView = findViewById(R.id.hour_text);
+        TextView minuteView = findViewById(R.id.minute_text);
+        TextView dayNightView = findViewById(R.id.day_night_text);
+
+        if (showHour && hourView != null) {
+            hourView.setTextSize(TypedValue.COMPLEX_UNIT_SP, hourSize * scale);
         }
-        if (showDayNight) {
-            previewDayNight.setTextSize(TypedValue.COMPLEX_UNIT_SP, dayNightSize * scale);
+        if (showDayNight && dayNightView != null) {
+            dayNightView.setTextSize(TypedValue.COMPLEX_UNIT_SP, dayNightSize * scale);
         }
-        if (showMinute) {
-            previewMinute.setTextSize(TypedValue.COMPLEX_UNIT_SP, minuteSize * scale);
+        if (showMinute && minuteView != null) {
+            minuteView.setTextSize(TypedValue.COMPLEX_UNIT_SP, minuteSize * scale);
         }
     }
 

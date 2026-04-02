@@ -162,6 +162,131 @@ public abstract class BaseWordClockWidgetProvider extends AppWidgetProvider {
         scheduleNextMinute(context);
     }
 
+    public static void updateLocalWidgetView(Context context, android.view.View rootView, int appWidgetId) {
+        if (context == null || rootView == null) return;
+
+        java.util.Calendar calendar = java.util.Calendar.getInstance();
+
+        boolean use12Hour = WidgetPreferences.getUse12HourFormat(context, appWidgetId, true);
+        int hour24 = calendar.get(java.util.Calendar.HOUR_OF_DAY);
+
+        boolean showHour = WidgetPreferences.getShowHour(context, appWidgetId, true);
+        boolean showMinute = WidgetPreferences.getShowMinute(context, appWidgetId, true);
+        boolean showDayNight = WidgetPreferences.getShowDayNight(context, appWidgetId, true);
+        boolean showDate = WidgetPreferences.getShowDate(context, appWidgetId, false);
+        boolean showDayOfWeek = WidgetPreferences.getShowDayOfWeek(context, appWidgetId, false);
+
+        boolean addZeroMinute = WidgetPreferences.getAddZeroMinute(context, appWidgetId, false);
+
+        String hourText = use12Hour ? NumberToWords.convertHour(hour24) : NumberToWords.convertHour24(hour24);
+        String minuteText = NumberToWords.convertMinute(calendar.get(java.util.Calendar.MINUTE), addZeroMinute, use12Hour);
+
+        if (!use12Hour && hour24 == 0 && calendar.get(java.util.Calendar.MINUTE) == 0) {
+            hourText = "двенадцать";
+            minuteText = "ноль-ноль";
+        }
+
+        String dayNightText = NumberToWords.getDayNight(hour24);
+        String dayOfWeekText = NumberToWords.getDayOfWeek(calendar.get(java.util.Calendar.DAY_OF_WEEK) - 1);
+        String dateText = NumberToWords.convertDate(calendar.get(java.util.Calendar.DAY_OF_MONTH), calendar.get(java.util.Calendar.MONTH) + 1, calendar.get(java.util.Calendar.YEAR));
+
+        android.widget.TextView hourView = rootView.findViewById(R.id.hour_text);
+        android.widget.TextView minuteView = rootView.findViewById(R.id.minute_text);
+        android.widget.TextView dayNightView = rootView.findViewById(R.id.day_night_text);
+        android.widget.TextView dateView = rootView.findViewById(R.id.date_text);
+        android.widget.TextView dayOfWeekView = rootView.findViewById(R.id.day_of_week_text);
+
+        if (hourView != null) {
+            hourView.setText(hourText);
+            hourView.setTextSize(WidgetPreferences.getFontSize(context, appWidgetId, 24f));
+            hourView.setTextColor(WidgetPreferences.getHourTextColor(context, appWidgetId, android.graphics.Color.BLACK));
+            hourView.setVisibility(showHour ? android.view.View.VISIBLE : android.view.View.GONE);
+        }
+        if (minuteView != null) {
+            minuteView.setText(minuteText);
+            minuteView.setTextSize(WidgetPreferences.getMinuteFontSize(context, appWidgetId, 24f));
+            minuteView.setTextColor(WidgetPreferences.getMinuteTextColor(context, appWidgetId, android.graphics.Color.BLACK));
+            minuteView.setVisibility(showMinute ? android.view.View.VISIBLE : android.view.View.GONE);
+        }
+        if (dayNightView != null) {
+            dayNightView.setText(dayNightText);
+            dayNightView.setTextSize(WidgetPreferences.getDayNightFontSize(context, appWidgetId, 18f));
+            dayNightView.setTextColor(WidgetPreferences.getDayNightTextColor(context, appWidgetId, android.graphics.Color.RED));
+            dayNightView.setVisibility(showDayNight ? android.view.View.VISIBLE : android.view.View.GONE);
+        }
+        if (dateView != null) {
+            dateView.setText(dateText);
+            dateView.setTextSize(WidgetPreferences.getDateFontSize(context, appWidgetId, 18f));
+            dateView.setTextColor(WidgetPreferences.getDateTextColor(context, appWidgetId, android.graphics.Color.BLACK));
+            dateView.setVisibility(showDate ? android.view.View.VISIBLE : android.view.View.GONE);
+        }
+        if (dayOfWeekView != null) {
+            dayOfWeekView.setText(dayOfWeekText);
+            dayOfWeekView.setTextSize(WidgetPreferences.getDayOfWeekFontSize(context, appWidgetId, 18f));
+            dayOfWeekView.setTextColor(WidgetPreferences.getDayOfWeekTextColor(context, appWidgetId, android.graphics.Color.BLACK));
+            dayOfWeekView.setVisibility(showDayOfWeek ? android.view.View.VISIBLE : android.view.View.GONE);
+        }
+
+        int hourDx = 0;
+        int hourDy = 0;
+        int minuteDx = 0;
+        int minuteDy = 0;
+        int dayNightDx = 0;
+        int dayNightDy = 0;
+        int dateDx = 0;
+        int dateDy = 0;
+        int dayOfWeekDx = 0;
+        int dayOfWeekDy = 0;
+
+        if (WidgetPreferences.getUseConstructorLayout(context, appWidgetId, false)) {
+            hourDx = WidgetPreferences.constrainOffset(WidgetPreferences.getOffsetX(context, appWidgetId, "hour", 0));
+            hourDy = WidgetPreferences.constrainOffset(WidgetPreferences.getOffsetY(context, appWidgetId, "hour", 0));
+            minuteDx = WidgetPreferences.constrainOffset(WidgetPreferences.getOffsetX(context, appWidgetId, "minute", 0));
+            minuteDy = WidgetPreferences.constrainOffset(WidgetPreferences.getOffsetY(context, appWidgetId, "minute", 0));
+            dayNightDx = WidgetPreferences.constrainOffset(WidgetPreferences.getDayNightOffsetX(context, appWidgetId, 0));
+            dayNightDy = WidgetPreferences.constrainOffset(WidgetPreferences.getDayNightOffsetY(context, appWidgetId, 0));
+            dateDx = WidgetPreferences.constrainOffset(WidgetPreferences.getDateOffsetX(context, appWidgetId, 0));
+            dateDy = WidgetPreferences.constrainOffset(WidgetPreferences.getDateOffsetY(context, appWidgetId, 0));
+            dayOfWeekDx = WidgetPreferences.constrainOffset(WidgetPreferences.getDayOfWeekOffsetX(context, appWidgetId, 0));
+            dayOfWeekDy = WidgetPreferences.constrainOffset(WidgetPreferences.getDayOfWeekOffsetY(context, appWidgetId, 0));
+        }
+
+        applyLocalPadding(rootView, R.id.hour_wrapper, hourDx, hourDy);
+        applyLocalPadding(rootView, R.id.minute_wrapper, minuteDx, minuteDy);
+        applyLocalPadding(rootView, R.id.day_night_wrapper, dayNightDx, dayNightDy);
+        applyLocalPadding(rootView, R.id.date_wrapper, dateDx, dateDy);
+        applyLocalPadding(rootView, R.id.day_of_week_wrapper, dayOfWeekDx, dayOfWeekDy);
+
+        int bgColor = WidgetPreferences.getBackgroundColor(context, appWidgetId, 0xFFFFFFFF);
+        int alpha = WidgetPreferences.getBackgroundAlpha(context, appWidgetId, 255);
+        bgColor = (bgColor & 0x00FFFFFF) | ((alpha & 0xFF) << 24);
+
+        android.view.View container = rootView.findViewById(R.id.widget_container);
+        if (container != null) {
+            container.setBackgroundColor(bgColor);
+        }
+
+        android.view.View borderView = rootView.findViewById(R.id.widget_border);
+        if (borderView != null && borderView.getBackground() instanceof android.graphics.drawable.GradientDrawable) {
+            android.graphics.drawable.GradientDrawable drawable = (android.graphics.drawable.GradientDrawable) borderView.getBackground().mutate();
+            int borderColor = WidgetPreferences.getBorderColor(context, appWidgetId, 0xFF0000FF);
+            int borderWidth = WidgetPreferences.getBorderWidth(context, appWidgetId, 2);
+            drawable.setStroke(borderWidth, borderColor);
+            borderView.setBackground(drawable);
+        }
+    }
+
+    private static void applyLocalPadding(android.view.View rootView, int viewId, int offsetX, int offsetY) {
+        android.view.View wrapper = rootView.findViewById(viewId);
+        if (wrapper != null) {
+            int left = Math.max(0, offsetX);
+            int top = Math.max(0, offsetY);
+            int right = Math.max(0, -offsetX);
+            int bottom = Math.max(0, -offsetY);
+            wrapper.setPadding(left, top, right, bottom);
+        }
+    }
+
     private void applyPaddingToWrapper(RemoteViews views, int wrapperViewId, int offsetX, int offsetY) {
         int left = Math.max(0, offsetX);
         int top = Math.max(0, offsetY);

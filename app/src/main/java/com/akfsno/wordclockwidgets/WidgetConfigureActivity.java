@@ -39,6 +39,7 @@ public class WidgetConfigureActivity extends Activity {
     private int appWidgetId;
     private ExpandableListView blockList;
     private View previewContainer;
+    private View hourWrapper, minuteWrapper, dayNightWrapper, dateWrapper, dayOfWeekWrapper;
     private TextView previewHour, previewMinute, previewDayNight, previewDate, previewDayOfWeek;
     private Button joystickUp, joystickDown, joystickLeft, joystickRight;
     private TextView coordinates;
@@ -100,12 +101,18 @@ public class WidgetConfigureActivity extends Activity {
 
     private void initializeViews() {
         blockList = findViewById(R.id.block_list);
-        previewContainer = findViewById(R.id.preview_container);
-        previewHour = findViewById(R.id.preview_hour);
-        previewMinute = findViewById(R.id.preview_minute);
-        previewDayNight = findViewById(R.id.preview_day_night);
-        previewDate = findViewById(R.id.preview_date);
-        previewDayOfWeek = findViewById(R.id.preview_day_of_week);
+        previewContainer = findViewById(R.id.widget_preview_container);
+        hourWrapper = findViewById(R.id.hour_wrapper);
+        minuteWrapper = findViewById(R.id.minute_wrapper);
+        dayNightWrapper = findViewById(R.id.day_night_wrapper);
+        dateWrapper = findViewById(R.id.date_wrapper);
+        dayOfWeekWrapper = findViewById(R.id.day_of_week_wrapper);
+
+        previewHour = findViewById(R.id.hour_text);
+        previewMinute = findViewById(R.id.minute_text);
+        previewDayNight = findViewById(R.id.day_night_text);
+        previewDate = findViewById(R.id.date_text);
+        previewDayOfWeek = findViewById(R.id.day_of_week_text);
         joystickUp = findViewById(R.id.joystick_up);
         joystickDown = findViewById(R.id.joystick_down);
         joystickLeft = findViewById(R.id.joystick_left);
@@ -268,11 +275,17 @@ public class WidgetConfigureActivity extends Activity {
     }
 
     private void updatePreview() {
-        applyMarginWithBounds("hour", previewHour);
-        applyMarginWithBounds("minute", previewMinute);
-        applyMarginWithBounds("dayNight", previewDayNight);
-        applyMarginWithBounds("date", previewDate);
-        applyMarginWithBounds("dayOfWeek", previewDayOfWeek);
+        View rootView = findViewById(R.id.widget_preview_container);
+        BaseWordClockWidgetProvider.updateLocalWidgetView(this, rootView, appWidgetId);
+
+        // Apply current constructor offsets to wrappers (interactive drag)
+        applyMarginWithBounds("hour", hourWrapper);
+        applyMarginWithBounds("minute", minuteWrapper);
+        applyMarginWithBounds("dayNight", dayNightWrapper);
+        applyMarginWithBounds("date", dateWrapper);
+        applyMarginWithBounds("dayOfWeek", dayOfWeekWrapper);
+
+        updateCoordinates();
     }
 
     private void applyMarginWithBounds(String block, View view) {
@@ -399,19 +412,19 @@ public class WidgetConfigureActivity extends Activity {
             }
         };
 
-        previewHour.setOnTouchListener(dragListener);
-        previewMinute.setOnTouchListener(dragListener);
-        previewDayNight.setOnTouchListener(dragListener);
-        previewDate.setOnTouchListener(dragListener);
-        previewDayOfWeek.setOnTouchListener(dragListener);
+        if (hourWrapper != null) hourWrapper.setOnTouchListener(dragListener);
+        if (minuteWrapper != null) minuteWrapper.setOnTouchListener(dragListener);
+        if (dayNightWrapper != null) dayNightWrapper.setOnTouchListener(dragListener);
+        if (dateWrapper != null) dateWrapper.setOnTouchListener(dragListener);
+        if (dayOfWeekWrapper != null) dayOfWeekWrapper.setOnTouchListener(dragListener);
     }
 
     private String getBlockFromView(View view) {
-        if (view == previewHour) return "hour";
-        if (view == previewMinute) return "minute";
-        if (view == previewDayNight) return "dayNight";
-        if (view == previewDate) return "date";
-        if (view == previewDayOfWeek) return "dayOfWeek";
+        if (view == hourWrapper) return "hour";
+        if (view == minuteWrapper) return "minute";
+        if (view == dayNightWrapper) return "dayNight";
+        if (view == dateWrapper) return "date";
+        if (view == dayOfWeekWrapper) return "dayOfWeek";
         return "hour";
     }
 
@@ -431,12 +444,12 @@ public class WidgetConfigureActivity extends Activity {
 
     private View getViewByBlock(String block) {
         switch (block) {
-            case "hour": return previewHour;
-            case "minute": return previewMinute;
-            case "dayNight": return previewDayNight;
-            case "date": return previewDate;
-            case "dayOfWeek": return previewDayOfWeek;
-            default: return previewHour;
+            case "hour": return hourWrapper;
+            case "minute": return minuteWrapper;
+            case "dayNight": return dayNightWrapper;
+            case "date": return dateWrapper;
+            case "dayOfWeek": return dayOfWeekWrapper;
+            default: return hourWrapper;
         }
     }
 
@@ -539,102 +552,7 @@ public class WidgetConfigureActivity extends Activity {
     }
 
     public void updatePreviewText() {
-        Calendar calendar = Calendar.getInstance();
-        int hour24 = calendar.get(Calendar.HOUR_OF_DAY);
-        int hour12 = calendar.get(Calendar.HOUR);
-        if (hour12 == 0) hour12 = 12;
-
-        boolean use12 = WidgetPreferences.getUse12HourFormat(this, appWidgetId, true);
-        boolean showHour = WidgetPreferences.getShowHour(this, appWidgetId, true);
-        boolean showMinute = WidgetPreferences.getShowMinute(this, appWidgetId, true);
-        boolean showDayNight = WidgetPreferences.getShowDayNight(this, appWidgetId, true);
-        boolean showDate = WidgetPreferences.getShowDate(this, appWidgetId, false);
-        boolean showDayOfWeek = WidgetPreferences.getShowDayOfWeek(this, appWidgetId, false);
-
-        String hourText = use12 ? NumberToWords.convertHour(hour24) : NumberToWords.convertHour24(hour24);
-        String minuteText = NumberToWords.convertMinute(calendar.get(Calendar.MINUTE), WidgetPreferences.getAddZeroMinute(this, appWidgetId, false), use12);
-
-        if (!use12 && hour24 == 0 && calendar.get(Calendar.MINUTE) == 0) {
-            hourText = "двенадцать";
-            minuteText = "ноль-ноль";
-        }
-        String dayNightText = NumberToWords.getDayNight(hour24);
-        String dateText = NumberToWords.convertDate(calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR));
-        String dayOfWeekText = NumberToWords.getDayOfWeek(calendar.get(Calendar.DAY_OF_WEEK) - 1);
-
-        if (previewHour != null) {
-            previewHour.setText(hourText);
-            previewHour.setTextSize(WidgetPreferences.getFontSize(this, appWidgetId, 24f));
-            previewHour.setTextColor(WidgetPreferences.getHourTextColor(this, appWidgetId, getResources().getColor(android.R.color.black)));
-            previewHour.setVisibility(showHour ? View.VISIBLE : View.GONE);
-        }
-
-        if (previewMinute != null) {
-            previewMinute.setText(minuteText);
-            previewMinute.setTextSize(WidgetPreferences.getMinuteFontSize(this, appWidgetId, 24f));
-            previewMinute.setTextColor(WidgetPreferences.getMinuteTextColor(this, appWidgetId, getResources().getColor(android.R.color.black)));
-            previewMinute.setVisibility(showMinute ? View.VISIBLE : View.GONE);
-        }
-
-        if (previewDayNight != null) {
-            previewDayNight.setText(dayNightText);
-            previewDayNight.setTextSize(WidgetPreferences.getDayNightFontSize(this, appWidgetId, 18f));
-            previewDayNight.setTextColor(WidgetPreferences.getDayNightTextColor(this, appWidgetId, getResources().getColor(android.R.color.holo_red_dark)));
-            previewDayNight.setVisibility(showDayNight ? View.VISIBLE : View.GONE);
-        }
-
-        if (previewDate != null) {
-            previewDate.setText(dateText);
-            previewDate.setTextSize(WidgetPreferences.getDateFontSize(this, appWidgetId, 18f));
-            previewDate.setTextColor(WidgetPreferences.getDateTextColor(this, appWidgetId, getResources().getColor(android.R.color.black)));
-            previewDate.setVisibility(showDate ? View.VISIBLE : View.GONE);
-        }
-
-        if (previewDayOfWeek != null) {
-            previewDayOfWeek.setText(dayOfWeekText);
-            previewDayOfWeek.setTextSize(WidgetPreferences.getDayOfWeekFontSize(this, appWidgetId, 18f));
-            previewDayOfWeek.setTextColor(WidgetPreferences.getDayOfWeekTextColor(this, appWidgetId, getResources().getColor(android.R.color.black)));
-            previewDayOfWeek.setVisibility(showDayOfWeek ? View.VISIBLE : View.GONE);
-        }
-
-        // no seconds in preview anymore
-        if (previewHour != null) {
-            previewHour.setTextColor(WidgetPreferences.getHourTextColor(this, appWidgetId, getResources().getColor(android.R.color.black)));
-        }
-        if (previewMinute != null) {
-            previewMinute.setTextColor(WidgetPreferences.getMinuteTextColor(this, appWidgetId, getResources().getColor(android.R.color.black)));
-        }
-        if (previewDayNight != null) {
-            previewDayNight.setTextColor(WidgetPreferences.getDayNightTextColor(this, appWidgetId, getResources().getColor(android.R.color.holo_red_dark)));
-        }
-        if (previewDate != null) {
-            previewDate.setTextColor(WidgetPreferences.getDateTextColor(this, appWidgetId, getResources().getColor(android.R.color.black)));
-        }
-        if (previewDayOfWeek != null) {
-            previewDayOfWeek.setTextColor(WidgetPreferences.getDayOfWeekTextColor(this, appWidgetId, getResources().getColor(android.R.color.black)));
-        }
-
-        if (previewHour != null) previewHour.setVisibility(showHour ? View.VISIBLE : View.GONE);
-        if (previewMinute != null) previewMinute.setVisibility(showMinute ? View.VISIBLE : View.GONE);
-        if (previewDayNight != null) previewDayNight.setVisibility(showDayNight ? View.VISIBLE : View.GONE);
-        if (previewDate != null) previewDate.setVisibility(showDate ? View.VISIBLE : View.GONE);
-        if (previewDayOfWeek != null) previewDayOfWeek.setVisibility(showDayOfWeek ? View.VISIBLE : View.GONE);
-
-        int bgColor = WidgetPreferences.getBackgroundColor(this, appWidgetId, 0xFFFFFFFF);
-        int alpha = WidgetPreferences.getBackgroundAlpha(this, appWidgetId, 255);
-        bgColor = (bgColor & 0x00FFFFFF) | ((alpha & 0xFF) << 24);
-        findViewById(R.id.preview_container).setBackgroundColor(bgColor);
-
-        int borderColor = WidgetPreferences.getBorderColor(this, appWidgetId, getResources().getColor(android.R.color.holo_red_dark));
-        // Set border color by modifying the drawable
-        View container = findViewById(R.id.preview_container);
-        android.graphics.drawable.Drawable bg = container.getBackground();
-        if (bg instanceof android.graphics.drawable.GradientDrawable) {
-            android.graphics.drawable.GradientDrawable drawable = (android.graphics.drawable.GradientDrawable) bg.mutate();
-            drawable.setStroke(2, borderColor);
-        } else {
-            // Fallback if not GradientDrawable
-        }
+        updatePreview();
     }
 
     private void setupButtons() {
