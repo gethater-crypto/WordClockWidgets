@@ -59,7 +59,8 @@ public class WidgetConfigureActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        // saveOffsets(); // removed to avoid frequent saves
+        // auto-save constructor values to avoid loss when user closes without explicit Save
+        saveOffsets();
     }
 
     @Override
@@ -288,22 +289,11 @@ public class WidgetConfigureActivity extends Activity {
         );
         params.gravity = Gravity.TOP | Gravity.START;
 
-        int left;
-        if (bounded[0] >= 0) {
-            left = bounded[0];
-        } else {
-            left = previewContainer.getWidth() - view.getWidth() + bounded[0];
-        }
+        int centerX = (previewContainer.getWidth() - view.getWidth()) / 2;
+        int centerY = (previewContainer.getHeight() - view.getHeight()) / 2;
 
-        int top;
-        if (bounded[1] >= 0) {
-            top = bounded[1];
-        } else {
-            top = previewContainer.getHeight() - view.getHeight() + bounded[1];
-        }
-
-        params.leftMargin = left;
-        params.topMargin = top;
+        params.leftMargin = centerX + bounded[0];
+        params.topMargin = centerY + bounded[1];
         view.setLayoutParams(params);
     }
 
@@ -327,12 +317,10 @@ public class WidgetConfigureActivity extends Activity {
             return new int[]{WidgetPreferences.constrainOffsetX(x), WidgetPreferences.constrainOffsetY(y)};
         }
 
-        int borderPx = 0; // Allow full workspace usage
-
-        int maxX = containerW - viewW - borderPx;
+        int maxX = (containerW - viewW) / 2;
         int minX = -maxX;
 
-        int maxY = containerH - viewH - borderPx;
+        int maxY = (containerH - viewH) / 2;
         int minY = -maxY;
 
         int boundedX = Math.max(minX, Math.min(maxX, x));
@@ -352,45 +340,19 @@ public class WidgetConfigureActivity extends Activity {
     }
 
     private int previewToWidgetX(int previewX) {
-        float previewLeft = previewX >= 0 ? previewX : previewPixelWidth + previewX;
-        float widgetLeft = previewLeft * getScaleX();
-        if (previewX >= 0) {
-            return Math.round(widgetLeft);
-        } else {
-            return Math.round(widgetLeft - dpToPx(REAL_WIDGET_DP_WIDTH));
-        }
+        return Math.round(previewX * getScaleX());
     }
 
     private int previewToWidgetY(int previewY) {
-        float previewTop = previewY >= 0 ? previewY : previewPixelHeight + previewY;
-        float widgetTop = previewTop * getScaleY();
-        if (previewY >= 0) {
-            return Math.round(widgetTop);
-        } else {
-            return Math.round(widgetTop - dpToPx(REAL_WIDGET_DP_HEIGHT));
-        }
+        return Math.round(previewY * getScaleY());
     }
 
     private int widgetToPreviewX(int widgetX) {
-        if (widgetX >= 0) {
-            float previewLeft = widgetX / getScaleX();
-            return Math.round(previewLeft);
-        } else {
-            float widgetRight = dpToPx(REAL_WIDGET_DP_WIDTH) + widgetX;
-            float previewRight = widgetRight / getScaleX();
-            return Math.round(previewRight - previewPixelWidth);
-        }
+        return Math.round(widgetX / getScaleX());
     }
 
     private int widgetToPreviewY(int widgetY) {
-        if (widgetY >= 0) {
-            float previewTop = widgetY / getScaleY();
-            return Math.round(previewTop);
-        } else {
-            float widgetBottom = dpToPx(REAL_WIDGET_DP_HEIGHT) + widgetY;
-            float previewBottom = widgetBottom / getScaleY();
-            return Math.round(previewBottom - previewPixelHeight);
-        }
+        return Math.round(widgetY / getScaleY());
     }
 
     private void setupDragAndDrop() {
@@ -425,30 +387,12 @@ public class WidgetConfigureActivity extends Activity {
                         blockOffsets.get(draggedBlock)[0] = bounded[0];
                         blockOffsets.get(draggedBlock)[1] = bounded[1];
 
-                        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                                FrameLayout.LayoutParams.WRAP_CONTENT,
-                                FrameLayout.LayoutParams.WRAP_CONTENT
-                        );
-                        params.gravity = Gravity.CENTER;
-                        params.leftMargin = bounded[0];
-                        params.topMargin = bounded[1];
-                        view.setLayoutParams(params);
-
+                        updatePreview();
                         updateCoordinates();
                         return true;
                     case MotionEvent.ACTION_UP:
-                        // Keep preview offsets in scaled coordinates; real widget values are saved via saveOffsets()
-                        int[] offUp = blockOffsets.get(draggedBlock);
-
-                        FrameLayout.LayoutParams finalParams = new FrameLayout.LayoutParams(
-                                FrameLayout.LayoutParams.WRAP_CONTENT,
-                                FrameLayout.LayoutParams.WRAP_CONTENT
-                        );
-                        finalParams.gravity = Gravity.CENTER;
-                        finalParams.leftMargin = offUp[0];
-                        finalParams.topMargin = offUp[1];
-                        view.setLayoutParams(finalParams);
-
+                        updatePreview();
+                        updateCoordinates();
                         return true;
                 }
                 return false;
