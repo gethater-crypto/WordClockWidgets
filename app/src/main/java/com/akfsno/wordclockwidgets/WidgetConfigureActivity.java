@@ -30,6 +30,9 @@ public class WidgetConfigureActivity extends Activity {
     private static final int CONSTRUCTOR_PREVIEW_DP_WIDTH = 360;
     private static final int CONSTRUCTOR_PREVIEW_DP_HEIGHT = 180;
 
+    private static final int GRID_COLUMNS = 6;
+    private static final int GRID_ROWS = 2;
+
     private int previewPixelWidth;
     private int previewPixelHeight;
 
@@ -124,6 +127,8 @@ public class WidgetConfigureActivity extends Activity {
         previewPixelWidth = previewWidthPx;
         previewPixelHeight = previewHeightPx;
 
+        addGridOverlay();
+
         ViewGroup.LayoutParams params = previewContainer.getLayoutParams();
         if (params != null) {
             params.width = previewWidthPx;
@@ -136,6 +141,53 @@ public class WidgetConfigureActivity extends Activity {
         if (marginParams != null) {
             marginParams.setMargins(0, 0, 0, 0);
             previewContainer.setLayoutParams(marginParams);
+        }
+    }
+
+    private void addGridOverlay() {
+        if (!(previewContainer instanceof FrameLayout)) return;
+
+        FrameLayout container = (FrameLayout) previewContainer;
+        // Remove existing grid lines
+        for (int i = container.getChildCount() - 1; i >= 0; i--) {
+            View child = container.getChildAt(i);
+            Object tag = child.getTag();
+            if (tag != null && "grid_line".equals(tag)) {
+                container.removeViewAt(i);
+            }
+        }
+
+        int cellWidth = previewPixelWidth / GRID_COLUMNS;
+        int cellHeight = previewPixelHeight / GRID_ROWS;
+
+        int lineColor = 0x55FF0000; // semi-transparent red
+
+        for (int x = 1; x < GRID_COLUMNS; x++) {
+            View line = new View(this);
+            line.setBackgroundColor(lineColor);
+            line.setTag("grid_line");
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                    Math.max(1, dpToPx(1)),
+                    previewPixelHeight
+            );
+            lp.leftMargin = x * cellWidth;
+            lp.topMargin = 0;
+            line.setLayoutParams(lp);
+            container.addView(line);
+        }
+
+        for (int y = 1; y < GRID_ROWS; y++) {
+            View line = new View(this);
+            line.setBackgroundColor(lineColor);
+            line.setTag("grid_line");
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                    previewPixelWidth,
+                    Math.max(1, dpToPx(1))
+            );
+            lp.leftMargin = 0;
+            lp.topMargin = y * cellHeight;
+            line.setLayoutParams(lp);
+            container.addView(line);
         }
     }
 
