@@ -44,7 +44,7 @@ public class WidgetConfigureActivity extends Activity {
     private TextView previewHour, previewMinute, previewDayNight, previewDate, previewDayOfWeek;
     private Button joystickUp, joystickDown, joystickLeft, joystickRight;
     private TextView coordinates;
-    private Button saveButton, applyButton, resetAllButton;
+    private Button saveButton, resetAllButton;
     private Button backgroundColorButton, borderColorButton;
     private SeekBar backgroundAlphaSeekBar, borderWidthSeekBar;
     private CheckBox use12hCheckbox;
@@ -136,7 +136,6 @@ public class WidgetConfigureActivity extends Activity {
         joystickRight = findViewById(R.id.joystick_right);
         coordinates = findViewById(R.id.coordinates);
         saveButton = findViewById(R.id.save_button);
-        applyButton = findViewById(R.id.apply_button);
         resetAllButton = findViewById(R.id.reset_all_button);
     }
 
@@ -578,7 +577,6 @@ public class WidgetConfigureActivity extends Activity {
 
     private void setupButtons() {
         saveButton.setOnClickListener(v -> saveOffsets());
-        applyButton.setOnClickListener(v -> saveOffsets());
         resetAllButton.setOnClickListener(v -> resetAll());
     }
 
@@ -650,7 +648,8 @@ public class WidgetConfigureActivity extends Activity {
         WidgetPreferences.saveDayOfWeekOffsetX(this, appWidgetId, blockOffsets.get("dayOfWeek")[0]);
         WidgetPreferences.saveDayOfWeekOffsetY(this, appWidgetId, blockOffsets.get("dayOfWeek")[1]);
 
-        updateWidget();
+        // Update widget asynchronously for faster UI response
+        handler.post(() -> updateWidget());
 
         Toast.makeText(this, "Сохранено", Toast.LENGTH_SHORT).show();
     }
