@@ -110,8 +110,27 @@ public class WidgetConfigureActivity extends Activity {
     }
 
     private void setPreviewContainerByProvider() {
-        // Use XML-defined sizes (432dp x 144dp) without overriding to screen size
-        // This ensures consistent 6x2 preview across devices
+        if (previewContainer == null) return;
+
+        android.util.DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        int screenWidth = displayMetrics.widthPixels;
+        int maxPreviewWidthPx = dpToPx(432); // 6 cells
+        int previewWidthPx = Math.min(screenWidth, maxPreviewWidthPx);
+        int previewHeightPx = dpToPx(144); // 2 cells
+
+        ViewGroup.LayoutParams params = previewContainer.getLayoutParams();
+        if (params != null) {
+            params.width = previewWidthPx;
+            params.height = previewHeightPx;
+            previewContainer.setLayoutParams(params);
+        }
+
+        // Set margins to zero
+        ViewGroup.MarginLayoutParams marginParams = (ViewGroup.MarginLayoutParams) previewContainer.getLayoutParams();
+        if (marginParams != null) {
+            marginParams.setMargins(0, 0, 0, 0);
+            previewContainer.setLayoutParams(marginParams);
+        }
     }
 
     private int dpToPx(int dp) {

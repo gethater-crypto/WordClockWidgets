@@ -17,7 +17,7 @@
 
     <FrameLayout
         android:id="@+id/preview_container"
-        android:layout_width="432dp"
+        android:layout_width="match_parent"
         android:layout_height="144dp"
         android:background="@drawable/widget_border"
         android:layout_marginBottom="16dp">
