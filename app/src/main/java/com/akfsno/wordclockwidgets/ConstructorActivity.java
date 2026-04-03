@@ -57,8 +57,8 @@ public class ConstructorActivity extends Activity {
         previewDayOfWeek = findViewById(R.id.day_of_week_text);
 
         // In constructor mode, show/hide date and day-of-week wrappers according to preferences
-        boolean showDate = WidgetPreferences.getShowDate(this, appWidgetId, false);
-        boolean showDayOfWeek = WidgetPreferences.getShowDayOfWeek(this, appWidgetId, false);
+        boolean showDate = WidgetPreferences.getShowDate(this, appWidgetId, true);
+        boolean showDayOfWeek = WidgetPreferences.getShowDayOfWeek(this, appWidgetId, true);
         if (dateWrapper != null) dateWrapper.setVisibility(showDate ? View.VISIBLE : View.GONE);
         if (dayOfWeekWrapper != null) dayOfWeekWrapper.setVisibility(showDayOfWeek ? View.VISIBLE : View.GONE);
         if (previewDate != null) previewDate.setVisibility(showDate ? View.VISIBLE : View.GONE);

@@ -349,11 +349,11 @@ public class WidgetConfigureActivity extends Activity {
             return new int[]{boundedX, boundedY};
         }
 
-        // Allow full constructor range, defined by real widget offsets converted to preview scale.
-        int maxX = widgetToPreviewX(WidgetPreferences.getMaxOffsetX());
-        int minX = widgetToPreviewX(WidgetPreferences.getMinOffsetX());
-        int maxY = widgetToPreviewY(WidgetPreferences.getMaxOffsetY());
-        int minY = widgetToPreviewY(WidgetPreferences.getMinOffsetY());
+        // Allow full freedom in constructor preview, no constraining
+        int maxX = Integer.MAX_VALUE / 2;
+        int minX = Integer.MIN_VALUE / 2;
+        int maxY = Integer.MAX_VALUE / 2;
+        int minY = Integer.MIN_VALUE / 2;
 
         int boundedX = Math.max(minX, Math.min(maxX, x));
         int boundedY = Math.max(minY, Math.min(maxY, y));
