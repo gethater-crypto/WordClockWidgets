@@ -64,12 +64,13 @@ public class BasicStyleActivity extends Activity {
         setupShowDate();
         setupShowDayOfWeek();
 
-        // Set basic style defaults
+        // Set basic style defaults and make base mode
+        WidgetPreferences.saveUseConstructorLayout(this, appWidgetId, false);
         WidgetPreferences.saveShowHour(this, appWidgetId, true);
         WidgetPreferences.saveShowMinute(this, appWidgetId, true);
         WidgetPreferences.saveShowDayNight(this, appWidgetId, true);
-        WidgetPreferences.saveShowDate(this, appWidgetId, true);
-        WidgetPreferences.saveShowDayOfWeek(this, appWidgetId, true);
+        WidgetPreferences.saveShowDate(this, appWidgetId, false);
+        WidgetPreferences.saveShowDayOfWeek(this, appWidgetId, false);
 
         Button saveButton = findViewById(R.id.save_button);
         saveButton.setOnClickListener(v -> saveAndFinish());
@@ -340,26 +341,16 @@ public class BasicStyleActivity extends Activity {
 
     private void setupShowDate() {
         CheckBox checkBox = findViewById(R.id.show_date_checkbox);
-        boolean current = WidgetPreferences.getShowDate(this, appWidgetId, false);
-        checkBox.setChecked(current);
-
-        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            WidgetPreferences.saveShowDate(BasicStyleActivity.this, appWidgetId, isChecked);
-            updatePreview();
-            updateWidget();
-        });
+        checkBox.setChecked(false);
+        checkBox.setEnabled(false);
+        WidgetPreferences.saveShowDate(this, appWidgetId, false);
     }
 
     private void setupShowDayOfWeek() {
         CheckBox checkBox = findViewById(R.id.show_day_of_week_checkbox);
-        boolean current = WidgetPreferences.getShowDayOfWeek(this, appWidgetId, false);
-        checkBox.setChecked(current);
-
-        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            WidgetPreferences.saveShowDayOfWeek(BasicStyleActivity.this, appWidgetId, isChecked);
-            updatePreview();
-            updateWidget();
-        });
+        checkBox.setChecked(false);
+        checkBox.setEnabled(false);
+        WidgetPreferences.saveShowDayOfWeek(this, appWidgetId, false);
     }
 
     private void updatePreview() {

@@ -349,14 +349,11 @@ public class WidgetConfigureActivity extends Activity {
             return new int[]{boundedX, boundedY};
         }
 
-        int computedMaxX = Math.max(0, (containerW - viewW) / 2);
-        int computedMaxY = Math.max(0, (containerH - viewH) / 2);
-
-        int maxX = Math.min(computedMaxX, WidgetPreferences.getMaxOffsetX());
-        int minX = Math.max(-computedMaxX, WidgetPreferences.getMinOffsetX());
-
-        int maxY = Math.min(computedMaxY, WidgetPreferences.getMaxOffsetY());
-        int minY = Math.max(-computedMaxY, WidgetPreferences.getMinOffsetY());
+        // Allow full constructor range, defined by real widget offsets converted to preview scale.
+        int maxX = widgetToPreviewX(WidgetPreferences.getMaxOffsetX());
+        int minX = widgetToPreviewX(WidgetPreferences.getMinOffsetX());
+        int maxY = widgetToPreviewY(WidgetPreferences.getMaxOffsetY());
+        int minY = widgetToPreviewY(WidgetPreferences.getMinOffsetY());
 
         int boundedX = Math.max(minX, Math.min(maxX, x));
         int boundedY = Math.max(minY, Math.min(maxY, y));

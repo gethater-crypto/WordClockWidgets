@@ -116,19 +116,19 @@ public abstract class BaseWordClockWidgetProvider extends AppWidgetProvider {
             dayOfWeekDx = WidgetPreferences.constrainOffsetX(WidgetPreferences.getDayOfWeekOffsetX(context, appWidgetId, 0));
             dayOfWeekDy = WidgetPreferences.constrainOffsetY(WidgetPreferences.getDayOfWeekOffsetY(context, appWidgetId, 0));
         } else {
-            // Base mode: center hour/dayNight/minute vertically stacked (hour above dayNight above minute)
+            // Base mode: center hour/dayNight/minute vertically stacked without extra offsets
             hourDx = 0;
-            hourDy = -40;
+            hourDy = 0;
             dayNightDx = 0;
             dayNightDy = 0;
             minuteDx = 0;
-            minuteDy = 40;
+            minuteDy = 0;
             dateDx = 0;
             dateDy = 0;
             dayOfWeekDx = 0;
             dayOfWeekDy = 0;
 
-            // Base mode hides date/dayOfWeek (only constructor mode can opt-in)
+            // Basic mode hides date/dayOfWeek (base style behavior)
             showDate = false;
             showDayOfWeek = false;
         }
@@ -294,11 +294,11 @@ public abstract class BaseWordClockWidgetProvider extends AppWidgetProvider {
         } else {
             // Base mode: vertical centered stack
             hourDx = 0;
-            hourDy = -40;
+            hourDy = 0;
             dayNightDx = 0;
             dayNightDy = 0;
             minuteDx = 0;
-            minuteDy = 40;
+            minuteDy = 0;
             dateDx = 0;
             dateDy = 0;
             dayOfWeekDx = 0;

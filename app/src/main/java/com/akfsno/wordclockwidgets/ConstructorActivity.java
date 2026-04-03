@@ -163,7 +163,7 @@ public class ConstructorActivity extends Activity {
     }
 
     private void saveAndFinish() {
-        WidgetPreferences.saveUseConstructorLayout(this, appWidgetId, false);
+        WidgetPreferences.saveUseConstructorLayout(this, appWidgetId, true);
 
         Intent resultValue = new Intent();
         resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
