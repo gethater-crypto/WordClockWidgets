@@ -56,14 +56,14 @@ public class ConstructorActivity extends Activity {
         previewDate = findViewById(R.id.date_text);
         previewDayOfWeek = findViewById(R.id.day_of_week_text);
 
-        // Keep behavior for basic mode: hide date/dayOfWeek if they are not used
-        if (previewDate != null) previewDate.setVisibility(View.GONE);
-        if (previewDayOfWeek != null) previewDayOfWeek.setVisibility(View.GONE);
-        if (previewDate != null) previewDate.setVisibility(View.GONE);
-        if (previewDayOfWeek != null) previewDayOfWeek.setVisibility(View.GONE);
+        // Keep behavior for basic mode: show/hide date and day-of-week according to preferences
+        boolean showDate = WidgetPreferences.getShowDate(this, appWidgetId, false);
+        boolean showDayOfWeek = WidgetPreferences.getShowDayOfWeek(this, appWidgetId, false);
+        if (previewDate != null) previewDate.setVisibility(showDate ? View.VISIBLE : View.GONE);
+        if (previewDayOfWeek != null) previewDayOfWeek.setVisibility(showDayOfWeek ? View.VISIBLE : View.GONE);
 
         // Remove constructor-specific UI elements (block list and joystick)
-        View blockList = findViewById(R.id.block_list);
+        View blockList = findViewById(R.id/block_list);
         if (blockList != null) blockList.setVisibility(View.GONE);
 
         View joystickContainer = findViewById(R.id.joystick_container);
