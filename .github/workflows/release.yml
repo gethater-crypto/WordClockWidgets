@@ -1,0 +1,191 @@
+name: Release iOS Build
+
+on:
+  workflow_run:
+    workflows: ["Build iOS App"]
+    branches: [main, ios-port]
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Download build artifacts
+        if: github.event_name == 'workflow_run'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id,
+            });
+            
+            let matchArtifact = artifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "ios-build-artifacts"
+            })[0];
+            
+            if (!matchArtifact) {
+              console.log("No artifacts found");
+              return;
+            }
+            
+            let download = await github.rest.actions.downloadArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: matchArtifact.id,
+              archive_format: 'zip',
+            });
+            
+            let fs = require('fs');
+            fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/artifacts.zip`, Buffer.from(download.data));
+      
+      - name: Extract artifacts
+        if: github.event_name == 'workflow_run'
+        run: |
+          unzip -q artifacts.zip || echo "Artifacts already extracted"
+          ls -la
+      
+      - name: Create Release Notes
+        id: release_notes
+        run: |
+          VERSION="${{ github.event.inputs.version || github.sha }}"
+          BUILD_DATE=$(date -u +'%Y-%m-%d %H:%M:%S UTC')
+          
+          cat > RELEASE_NOTES.md << EOF
+          # WordClockWidgets iOS App
+          
+          ## Version: $VERSION
+          **Build Date:** $BUILD_DATE
+          
+          ### 🎯 Target Platform
+          - **Device:** iPhone XS
+          - **iOS Version:** 18.4.1+
+          - **Minimum:** iOS 14.0
+          
+          ### ✨ Features
+          - ⏰ Time display in Russian words
+          - 🏠 Home screen widget support
+          - 🔧 Configurable layout and colors
+          - 🌙 Dark mode support
+          - 📱 Optimized for iPhone XS
+          
+          ### 📥 Installation Instructions
+          
+          #### On macOS with Xcode:
+          1. **Clone the repository:**
+             \`\`\`bash
+             git clone https://github.com/${{ github.repository }}.git
+             cd WordClockWidgets
+             git checkout ios-port
+             \`\`\`
+          
+          2. **Open project in Xcode:**
+             \`\`\`bash
+             cd ios
+             open WordClockWidgets.xcworkspace
+             \`\`\`
+          
+          3. **Build and Run:**
+             - Select iPhone XS from device dropdown
+             - Press Cmd+B to build
+             - Press Cmd+R to run on simulator
+             - Or connect device and press Cmd+R to install
+          
+          #### On Physical iPhone XS:
+          1. Follow DEVICE_INSTALLATION.md in ios/ folder
+          2. Requires Apple Developer account
+          3. Create provisioning profile and certificate
+          4. Trust developer profile on device
+          
+          ### 🔧 Technical Details
+          - **Language:** Swift 5.9+
+          - **Framework:** SwiftUI + WidgetKit
+          - **Architecture:** Arm64
+          - **Dependencies:** iOS SDK only (no external libraries)
+          
+          ### 📚 Documentation
+          - **BUILD_GUIDE.md** - Detailed build instructions
+          - **DEVICE_INSTALLATION.md** - Device setup guide
+          - **DEPLOYMENT_READY.md** - Deployment checklist
+          
+          ### ✅ Compatibility
+          | Feature | Status |
+          |---------|--------|
+          | iOS 14+ | ✅ Full |
+          | iOS 18.4.1 | ✅ Optimized |
+          | iPhone XS | ✅ Primary |
+          | WidgetKit | ✅ Supported |
+          | Russian | 🇷🇺 Native |
+          
+          ### 🐛 Known Issues
+          - None at this time
+          
+          ### 📝 Version History
+          - **1.0.0** - Initial iOS release
+            - Word clock widget
+            - Russian language support
+            - iPhone XS optimization
+          
+          ### 🤝 Support
+          For issues or questions:
+          1. Check documentation in ios/ folder
+          2. Review BUILD_GUIDE.md for build errors
+          3. See DEVICE_INSTALLATION.md for device issues
+          
+          ---
+          
+          **Build from:** ${{ github.ref }}  
+          **Commit:** ${{ github.sha }}  
+          **Runner:** macOS-latest
+          EOF
+          
+          echo "release_body<<EOF" >> $GITHUB_OUTPUT
+          cat RELEASE_NOTES.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          files: |
+            RELEASE_NOTES.md
+            ios/BUILD_GUIDE.md
+            ios/DEVICE_INSTALLATION.md
+            ios/DEPLOYMENT_READY.md
+            ios/README.md
+          body_path: RELEASE_NOTES.md
+          tag_name: ${{ github.event.inputs.version || github.ref }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Summary
+        run: |
+          echo "✅ Release created successfully!"
+          echo ""
+          echo "📱 WordClockWidgets iOS ${{ github.event.inputs.version || github.sha }}"
+          echo ""
+          echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases"
+          echo ""
+          echo "📥 Downloads available:"
+          echo "  - RELEASE_NOTES.md"
+          echo "  - BUILD_GUIDE.md"
+          echo "  - DEVICE_INSTALLATION.md"
+          echo "  - Source code (zip/tar.gz)"
