@@ -38,21 +38,13 @@ jobs:
           swift --version
           echo ""
       
-      - name: Check Xcode project structure
+      - name: Check and prepare Xcode project
         run: |
           cd $PROJECT_PATH
           echo "=== Checking project structure ==="
           
-          # Check workspace
-          if [ -d "$WORKSPACE" ]; then
-            echo "✅ Workspace found: $WORKSPACE"
-          else
-            echo "❌ Workspace not found!"
-            ls -la | grep -E "xcworkspace|xcodeproj"
-            exit 1
-          fi
-          
-          # Check key files
+          # Check files
+          echo "Checking required files:"
           files_to_check=(
             "WordClockWidgets/Info.plist"
             "WordClockWidgets/AppDelegate.swift"
@@ -60,13 +52,42 @@ jobs:
             "WordClockWidgets/ViewController.swift"
           )
           
+          MISSING=0
           for file in "${files_to_check[@]}"; do
             if [ -f "$file" ]; then
               echo "✅ $file"
             else
               echo "❌ $file missing"
+              MISSING=$((MISSING + 1))
             fi
           done
+          
+          if [ $MISSING -gt 0 ]; then
+            echo "❌ Missing files, cannot build"
+            exit 1
+          fi
+          
+          # Check and create workspace/project if needed
+          if [ -d "$WORKSPACE" ]; then
+            echo "✅ Workspace found: $WORKSPACE"
+            USE_WORKSPACE=1
+          elif [ -d "WordClockWidgets.xcodeproj" ]; then
+            echo "✅ Project found: WordClockWidgets.xcodeproj"
+            USE_WORKSPACE=0
+          else
+            echo "⚠️  No workspace or project found, will create from Package.swift"
+            if [ -f "Package.swift" ]; then
+              echo "Creating Xcode project from Package.swift..."
+              swift package generate-xcodeproj --output "WordClockWidgets.xcodeproj" 2>&1 | tail -5
+              USE_WORKSPACE=0
+            else
+              echo "❌ Package.swift not found"
+              exit 1
+            fi
+          fi
+          
+          echo "USE_WORKSPACE=$USE_WORKSPACE" >> $GITHUB_ENV
+          echo "✅ Project structure verified"
       
       - name: Clean build
         run: |
@@ -77,12 +98,22 @@ jobs:
           rm -rf build/DerivedData
           mkdir -p build/DerivedData
           
-          # Clean workspace
-          xcodebuild \
-            -workspace "$WORKSPACE" \
-            -scheme "$PRODUCT_NAME" \
-            -configuration "$CONFIGURATION" \
-            clean 2>&1 | tail -10
+          # Determine if using workspace or project
+          if [ "$USE_WORKSPACE" = "1" ]; then
+            echo "Cleaning workspace: $WORKSPACE"
+            xcodebuild \
+              -workspace "$WORKSPACE" \
+              -scheme "$PRODUCT_NAME" \
+              -configuration "$CONFIGURATION" \
+              clean 2>&1 | tail -5
+          else
+            echo "Cleaning project: WordClockWidgets.xcodeproj"
+            xcodebuild \
+              -project "WordClockWidgets.xcodeproj" \
+              -scheme "$PRODUCT_NAME" \
+              -configuration "$CONFIGURATION" \
+              clean 2>&1 | tail -5
+          fi
           
           echo "✅ Build directory cleaned"
       
@@ -92,8 +123,16 @@ jobs:
           
           echo "=== Building for iOS device (arm64) ==="
           
-          xcodebuild \
-            -workspace "$WORKSPACE" \
+          # Determine build command based on workspace/project
+          if [ "$USE_WORKSPACE" = "1" ]; then
+            echo "Building with workspace: $WORKSPACE"
+            BUILD_CMD="xcodebuild -workspace $WORKSPACE"
+          else
+            echo "Building with project: WordClockWidgets.xcodeproj"
+            BUILD_CMD="xcodebuild -project WordClockWidgets.xcodeproj"
+          fi
+          
+          eval "$BUILD_CMD" \
             -scheme "$PRODUCT_NAME" \
             -configuration "$CONFIGURATION" \
             -destination "generic/platform=ios" \
@@ -102,9 +141,9 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
-            build 2>&1 | tail -40
+            build 2>&1 | tail -50
           
-          BUILD_RESULT=$?
+          BUILD_RESULT=${PIPESTATUS[0]}
           
           if [ $BUILD_RESULT -eq 0 ]; then
             echo ""
@@ -112,6 +151,15 @@ jobs:
           else
             echo ""
             echo "❌ Build failed with exit code: $BUILD_RESULT"
+            
+            # Try to find where the error is
+            echo ""
+            echo "Searching for error details..."
+            find build/DerivedData -name "*.log" -type f 2>/dev/null | head -5 | while read logfile; do
+              echo "Log file: $logfile"
+              tail -20 "$logfile"
+            done
+            
             exit $BUILD_RESULT
           fi
       
