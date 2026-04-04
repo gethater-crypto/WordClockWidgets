@@ -41,15 +41,15 @@ jobs:
       - name: Check and prepare Xcode project
         run: |
           cd $PROJECT_PATH
-          echo "=== Checking project structure ==="
+          echo "=== Preparing Xcode project ==="
           
-          # Check files
+          # Check required files
           echo "Checking required files:"
           files_to_check=(
             "WordClockWidgets/Info.plist"
             "WordClockWidgets/AppDelegate.swift"
             "WordClockWidgets/SceneDelegate.swift"
-            "WordClockWidgets/ViewController.swift"
+            "Package.swift"
           )
           
           MISSING=0
@@ -67,27 +67,24 @@ jobs:
             exit 1
           fi
           
-          # Check and create workspace/project if needed
-          if [ -d "$WORKSPACE" ]; then
-            echo "✅ Workspace found: $WORKSPACE"
-            USE_WORKSPACE=1
-          elif [ -d "WordClockWidgets.xcodeproj" ]; then
-            echo "✅ Project found: WordClockWidgets.xcodeproj"
-            USE_WORKSPACE=0
-          else
-            echo "⚠️  No workspace or project found, will create from Package.swift"
-            if [ -f "Package.swift" ]; then
-              echo "Creating Xcode project from Package.swift..."
-              swift package generate-xcodeproj --output "WordClockWidgets.xcodeproj" 2>&1 | tail -5
-              USE_WORKSPACE=0
-            else
-              echo "❌ Package.swift not found"
-              exit 1
-            fi
+          # Always regenerate project from Package.swift to ensure it's fresh
+          echo ""
+          echo "Regenerating Xcode project from Package.swift..."
+          
+          # Remove old project if exists
+          rm -rf WordClockWidgets.xcodeproj WordClockWidgets.xcworkspace
+          
+          # Generate new project
+          swift package generate-xcodeproj --output "WordClockWidgets.xcodeproj" 2>&1 | tail -15
+          
+          if [ ! -d "WordClockWidgets.xcodeproj" ]; then
+            echo "❌ Failed to generate Xcode project"
+            exit 1
           fi
           
+          echo "✅ Xcode project generated fresh from Package.swift"
+          USE_WORKSPACE=0
           echo "USE_WORKSPACE=$USE_WORKSPACE" >> $GITHUB_ENV
-          echo "✅ Project structure verified"
       
       - name: Clean build
         run: |
@@ -98,23 +95,6 @@ jobs:
           rm -rf build/DerivedData
           mkdir -p build/DerivedData
           
-          # Determine if using workspace or project
-          if [ "$USE_WORKSPACE" = "1" ]; then
-            echo "Cleaning workspace: $WORKSPACE"
-            xcodebuild \
-              -workspace "$WORKSPACE" \
-              -scheme "$PRODUCT_NAME" \
-              -configuration "$CONFIGURATION" \
-              clean 2>&1 | tail -5
-          else
-            echo "Cleaning project: WordClockWidgets.xcodeproj"
-            xcodebuild \
-              -project "WordClockWidgets.xcodeproj" \
-              -scheme "$PRODUCT_NAME" \
-              -configuration "$CONFIGURATION" \
-              clean 2>&1 | tail -5
-          fi
-          
           echo "✅ Build directory cleaned"
       
       - name: Build for iOS device
@@ -123,16 +103,11 @@ jobs:
           
           echo "=== Building for iOS device (arm64) ==="
           
-          # Determine build command based on workspace/project
-          if [ "$USE_WORKSPACE" = "1" ]; then
-            echo "Building with workspace: $WORKSPACE"
-            BUILD_CMD="xcodebuild -workspace $WORKSPACE"
-          else
-            echo "Building with project: WordClockWidgets.xcodeproj"
-            BUILD_CMD="xcodebuild -project WordClockWidgets.xcodeproj"
-          fi
+          # Always use project since we regenerated it fresh
+          echo "Building with fresh project: WordClockWidgets.xcodeproj"
           
-          eval "$BUILD_CMD" \
+          xcodebuild \
+            -project "WordClockWidgets.xcodeproj" \
             -scheme "$PRODUCT_NAME" \
             -configuration "$CONFIGURATION" \
             -destination "generic/platform=ios" \
@@ -157,7 +132,7 @@ jobs:
             echo "Searching for error details..."
             find build/DerivedData -name "*.log" -type f 2>/dev/null | head -5 | while read logfile; do
               echo "Log file: $logfile"
-              tail -20 "$logfile"
+              tail -30 "$logfile"
             done
             
             exit $BUILD_RESULT
