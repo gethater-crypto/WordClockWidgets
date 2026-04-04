@@ -27,17 +27,22 @@ import java.util.Map;
 
 public class WidgetConfigureActivity extends Activity {
 
-    private static final int REAL_WIDGET_DP_WIDTH = 210;
-    private static final int REAL_WIDGET_DP_HEIGHT = 70;
+    private static final int REAL_WIDGET_DP_WIDTH = 370;
+    private static final int REAL_WIDGET_DP_HEIGHT = 200;
     private static final int CONSTRUCTOR_PREVIEW_DP_WIDTH = 370;
     private static final int CONSTRUCTOR_PREVIEW_DP_HEIGHT = 180;
 
-    // Static method to get the scale factor for preview font sizes
+    // Static method to get the scale factor for preview font sizes using area ratio
     public static float getPreviewFontScale(Context context) {
         float density = context.getResources().getDisplayMetrics().density;
         int previewPxWidth = (int) (CONSTRUCTOR_PREVIEW_DP_WIDTH * density + 0.5f);
+        int previewPxHeight = (int) (CONSTRUCTOR_PREVIEW_DP_HEIGHT * density + 0.5f);
         int realPxWidth = (int) (REAL_WIDGET_DP_WIDTH * density + 0.5f);
-        return (float) previewPxWidth / realPxWidth;
+        int realPxHeight = (int) (REAL_WIDGET_DP_HEIGHT * density + 0.5f);
+        float previewArea = (float) previewPxWidth * previewPxHeight;
+        float realArea = (float) realPxWidth * realPxHeight;
+        if (realArea <= 0f) return 1f;
+        return (float) Math.sqrt(previewArea / realArea);
     }
 
     private static final int GRID_COLUMNS = 6;
