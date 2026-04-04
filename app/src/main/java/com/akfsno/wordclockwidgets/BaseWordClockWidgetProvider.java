@@ -7,6 +7,8 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.text.SpannableString;
+import android.text.style.AbsoluteSizeSpan;
 import android.widget.RemoteViews;
 
 import java.text.SimpleDateFormat;
@@ -153,11 +155,11 @@ public abstract class BaseWordClockWidgetProvider extends AppWidgetProvider {
         views.setTextColor(R.id.day_of_week_text, dayOfWeekColor);
 
         // Apply font sizes
-        views.setFloat(R.id.hour_text, "setTextSize", WidgetPreferences.getFontSize(context, appWidgetId, 24f));
-        views.setFloat(R.id.minute_text, "setTextSize", WidgetPreferences.getMinuteFontSize(context, appWidgetId, 24f));
-        views.setFloat(R.id.day_night_text, "setTextSize", WidgetPreferences.getDayNightFontSize(context, appWidgetId, 18f));
-        views.setFloat(R.id.date_text, "setTextSize", WidgetPreferences.getDateFontSize(context, appWidgetId, 18f));
-        views.setFloat(R.id.day_of_week_text, "setTextSize", WidgetPreferences.getDayOfWeekFontSize(context, appWidgetId, 18f));
+        applyFontSizeToText(views, R.id.hour_text, hourText, WidgetPreferences.getFontSize(context, appWidgetId, 24f));
+        applyFontSizeToText(views, R.id.minute_text, minuteText, WidgetPreferences.getMinuteFontSize(context, appWidgetId, 24f));
+        applyFontSizeToText(views, R.id.day_night_text, dayNightText, WidgetPreferences.getDayNightFontSize(context, appWidgetId, 18f));
+        applyFontSizeToText(views, R.id.date_text, dateText, WidgetPreferences.getDateFontSize(context, appWidgetId, 18f));
+        applyFontSizeToText(views, R.id.day_of_week_text, dayOfWeekText, WidgetPreferences.getDayOfWeekFontSize(context, appWidgetId, 18f));
 
         views.setViewVisibility(R.id.hour_text, showHour ? android.view.View.VISIBLE : android.view.View.GONE);
         views.setViewVisibility(R.id.minute_text, showMinute ? android.view.View.VISIBLE : android.view.View.GONE);
@@ -345,9 +347,10 @@ public abstract class BaseWordClockWidgetProvider extends AppWidgetProvider {
         views.setViewPadding(wrapperViewId, left, top, right, bottom);
     }
 
-    private void applyTranslationToWrapper(RemoteViews views, int wrapperViewId, int offsetX, int offsetY) {
-        // RemoteViews does not always support setTranslationX/Y; keep compatibility by using padding as baseline.
-        applyPaddingToWrapper(views, wrapperViewId, offsetX, offsetY);
+    private void applyFontSizeToText(RemoteViews views, int viewId, String text, float size) {
+        SpannableString spannable = new SpannableString(text);
+        spannable.setSpan(new AbsoluteSizeSpan((int) size, true), 0, text.length(), 0);
+        views.setTextViewText(viewId, spannable);
     }
 
     private static void applyLocalTranslation(android.view.View rootView, int viewId, int offsetX, int offsetY) {
